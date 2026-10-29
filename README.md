@@ -1,4 +1,4 @@
-# 智枢学堂 · ZhiShu Academy
+﻿# 智枢学堂 · ZhiYan Academy
 
 > 基于多模态大模型的个性化资源生成与多智能体学习平台
 >
@@ -79,7 +79,7 @@ flowchart TB
 ## 四、目录结构
 
 ```text
-zhishu-academy/
+zhiyan-academy/
 ├── server/                     # Spring Boot 后端
 │   ├── src/main/java/com/
 │   │   ├── agent/              # 12 智能体词表、交接图/波次规划
