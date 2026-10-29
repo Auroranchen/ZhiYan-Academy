@@ -1,0 +1,28 @@
+# 智枢学堂 · RAG 金标准评测集 v1（起始版）
+#
+# 一行一题。# 开头为注释，加载时跳过。
+#
+# 出题纪律（务必遵守，否则评测没有意义）：
+#   1. mustCite 必须指向**语料快照里真实存在的** {resourceId, chunkIndex}，
+#      且该切片确实包含参考答案的要点。出题前先看 eval/corpus-v1.json。
+#   2. 负样本（type=negative）的主题必须**先核实语料里确实没有**。
+#      例如「二叉树」看似超纲，实测语料里出现 4 次，不能拿来做负样本。
+#   3. requiredFacts 用确定性匹配打分（零 API 成本），与 judge 的主观分互为交叉验证，
+#      所以要写成参考答案里**确实出现过**的短语。
+#
+# 当前语料（corpus-v1）覆盖：Python 列表与条件语句、Java 关键字与 String、
+# Spring 框架与 ORM、Java 实体类封装、数据结构（两数之和/顺序表）。
+{"id":"PY-LIST-01","courseId":1,"topic":"Python 列表","type":"concept","difficulty":"easy","question":"在 Python 中如何定义一个列表？列表和元组有什么区别？","referenceAnswer":"可以使用方括号 [] 或 list() 函数创建列表。列表是可变的，元组不可变，这是两者的主要区别。","requiredFacts":["方括号","list()","元组","可变"],"mustCite":[{"resourceId":4,"chunkIndex":0}]}
+{"id":"PY-LIST-02","courseId":1,"topic":"Python 列表","type":"concept","difficulty":"easy","question":"Python 列表中的元素可以是不同的数据类型吗？请举例说明。","referenceAnswer":"可以。列表中的元素可以是任意类型，包括数字、字符串、其他列表等，例如 my_list = [1, 'apple', 3.14]。","requiredFacts":["不同类型","数字","字符串","列表"],"mustCite":[{"resourceId":6,"chunkIndex":0}]}
+{"id":"PY-LIST-03","courseId":1,"topic":"Python 列表","type":"concept","difficulty":"medium","question":"怎样向 Python 列表中添加和删除元素？","referenceAnswer":"添加元素可用 append() 添加单个元素、extend() 添加多个元素；删除可用 pop() 弹出元素、remove() 删除指定元素。","requiredFacts":["append","extend","pop","remove"],"mustCite":[{"resourceId":8,"chunkIndex":0}]}
+{"id":"PY-COND-01","courseId":1,"topic":"Python 条件语句","type":"concept","difficulty":"medium","question":"Python 中条件语句用什么关键字开始？elif 和 else 分别起什么作用？","referenceAnswer":"条件语句以 if 关键字开始。elif 在 if 条件不成立时继续检查其它条件；else 在所有 if 和 elif 条件都不成立时执行。","requiredFacts":["if","elif","else","缩进"],"mustCite":[{"resourceId":5,"chunkIndex":1}]}
+{"id":"JAVA-VAR-01","courseId":1,"topic":"Java 关键字","type":"concept","difficulty":"medium","question":"Java 中 var 关键字的作用是什么？它和 int、double 这类关键字有什么区别？","referenceAnswer":"var 是用来声明变量的关键字，它不是数据类型关键字。易错点就是把 var 与 int、float、double 这类数据类型关键字混淆。","requiredFacts":["var","声明变量","数据类型"],"mustCite":[{"resourceId":9,"chunkIndex":0}]}
+{"id":"JAVA-STR-01","courseId":1,"topic":"Java 字符串","type":"code","difficulty":"easy","question":"Java 中如何获取一个字符串的长度？","referenceAnswer":"使用 String 类的 length() 方法获取字符串长度。","requiredFacts":["String","length()"],"mustCite":[{"resourceId":9,"chunkIndex":1}]}
+{"id":"SPRING-FW-01","courseId":1,"topic":"Spring 框架","type":"concept","difficulty":"medium","question":"什么是框架？在编程中使用框架有什么好处？","referenceAnswer":"框架是一种预先设计好的软件架构，提供通用的解决方案和功能模块，让开发者在其基础上构建应用。好处是简化开发过程、提高效率，并确保代码的可维护性和可扩展性。","requiredFacts":["软件架构","通用","效率","可维护性"],"mustCite":[{"resourceId":16,"chunkIndex":0}]}
+{"id":"SPRING-ORM-01","courseId":1,"topic":"Spring 框架","type":"concept","difficulty":"medium","question":"什么是 ORM？Hibernate 在其中扮演什么角色？","referenceAnswer":"ORM 是对象关系映射（Object Relational Mapping）。Hibernate 是一个优秀的 ORM 框架，让开发者用面向对象的方式操作数据库，而不必编写传统的 SQL 查询语句。","requiredFacts":["对象关系映射","Hibernate","SQL","映射"],"mustCite":[{"resourceId":15,"chunkIndex":1}]}
+{"id":"JAVA-ENCAP-01","courseId":1,"topic":"Java 封装","type":"code","difficulty":"medium","question":"给出的 Student 类是怎么体现封装的？重写 toString 有什么用处？","referenceAnswer":"属性用 private 修饰，只能通过 getter 和 setter 访问，这就是封装。重写 toString 是为了方便打印对象信息。","requiredFacts":["private","getter","setter","toString"],"mustCite":[{"resourceId":1,"chunkIndex":0}]}
+# ---------- 负样本：语料里确实没有答案，正确行为是明说「资料未覆盖」 ----------
+{"id":"NEG-MYSQL-01","courseId":1,"topic":"负样本","type":"negative","difficulty":"medium","question":"MySQL 中 InnoDB 和 MyISAM 两种存储引擎有什么区别？","referenceAnswer":"课程资料未覆盖此内容。","requiredFacts":[],"mustCite":[]}
+{"id":"NEG-TX-01","courseId":1,"topic":"负样本","type":"negative","difficulty":"medium","question":"数据库事务的四种隔离级别分别解决了什么问题？","referenceAnswer":"课程资料未覆盖此内容。","requiredFacts":[],"mustCite":[]}
+{"id":"NEG-CONTAINER-01","courseId":1,"topic":"负样本","type":"negative","difficulty":"easy","question":"Docker 容器和虚拟机在资源隔离上有什么区别？","referenceAnswer":"课程资料未覆盖此内容。","requiredFacts":[],"mustCite":[]}
+{"id":"NEG-REDIS-01","courseId":1,"topic":"负样本","type":"negative","difficulty":"medium","question":"Redis 的 RDB 和 AOF 两种持久化方式各有什么优缺点？","referenceAnswer":"课程资料未覆盖此内容。","requiredFacts":[],"mustCite":[]}

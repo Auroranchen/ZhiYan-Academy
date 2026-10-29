@@ -1,0 +1,43 @@
+# 测试 profile 专用配置（spring.profiles.active=test）
+#
+# 为什么需要这个文件：
+#   src/main/resources/application.yml 声明了
+#     spring.config.import: optional:file:./config/application-secrets.yml
+#   而该文件含**真实密钥**。此前 test 这个 profile 名没有任何对应的配置文件，
+#   于是任何走到 AI 路径的 Spring 测试都会用真实 key 打出**计费**请求。
+#
+# 为什么把 key 置空而不是填一个假值：
+#   ZhipuAIService.callZhipuAI 在 key 为空/不以 sk- 开头时抛 AIConfigurationException。
+#   置空能让误触 AI 的测试「响亮地失败」，而不是静默花钱或静默返回空。
+#
+# 需要真实 LLM 行为的测试，请改为 stub 掉 ZhipuAIService / AiSafeCallService 这一层
+# （模板见 com/service/AiSafeCallMetricsTest）。
+
+spring:
+  config:
+    activate:
+      on-profile: test
+
+ai:
+  zhipu:
+    api-key: ""
+  xfyun:
+    app-id: ""
+    api-key: ""
+    api-secret: ""
+  xfyun-tts:
+    app-id: ""
+    api-key: ""
+    api-secret: ""
+  embedding:
+    api-key: ""
+
+app:
+  # 评测开关：测试环境默认打开，便于在不碰真实预算的前提下跑变体
+  ai-eval:
+    enabled: true
+  # 看门狗在测试里不该抢跑：默认 60s 间隔有可能在集成测试执行期间触发，
+  # 把测试自己插入的「卡死运行」提前扫掉，导致断言时状况已变。
+  # 拉到 1 小时即等价于测试期间不执行（@Scheduled 的首次执行在延迟之后）。
+  agent-pipeline:
+    watchdog-interval-ms: 3600000

@@ -1,0 +1,13 @@
+variant,retrieval_hit_rate,citation_precision,fact_recall,avg_tokens_per_case,total_tokens,failed_cases
+v0-baseline,0.8889,,,0,0,0
+v1-lexical-only,0.7778,,,0,0,0
+v2-semantic-only,0.4444,,,0,0,0
+v3-topk20,0.8889,,,0,0,0
+v4-semantic-heavy,0.7778,,,0,0,0
+v5-lexical-heavy,0.8889,,,0,0,0
+v6-zhipu-hybrid,0.7778,,,0,0,0
+v7-zhipu-semantic-only,0.4444,,,0,0,0
+v8-zhipu-lexical-only,0.7778,,,0,0,0
+v9-zhipu-threshold,0.6667,,,0,0,0
+v10-zhipu-lexical-heavy,0.8889,,,0,0,0
+v11-zhipu-tuned,0.6667,,,0,0,2

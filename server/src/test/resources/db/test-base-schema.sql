@@ -1,0 +1,11 @@
+CREATE TABLE teacher (teacherid INT PRIMARY KEY, teacherno VARCHAR(50), teachername VARCHAR(100), password VARCHAR(100));
+CREATE TABLE major (majorid INT PRIMARY KEY, majorname VARCHAR(100));
+CREATE TABLE classinfo (classid INT PRIMARY KEY, classname VARCHAR(100), majorid INT);
+CREATE TABLE student (studentid INT PRIMARY KEY, studentno VARCHAR(50), studentname VARCHAR(100), password VARCHAR(100), classid INT, majorid INT);
+CREATE TABLE course (courseid INT AUTO_INCREMENT PRIMARY KEY, coursename VARCHAR(100) NOT NULL, teacherid INT NOT NULL, hours INT, description TEXT, createtime DATETIME, coursecode VARCHAR(20), semester VARCHAR(50), UNIQUE KEY uk_coursecode(coursecode));
+CREATE TABLE courseclass (id INT AUTO_INCREMENT PRIMARY KEY, courseid INT NOT NULL, classid INT NOT NULL);
+CREATE TABLE homework (homeworkid INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(200), courseid INT NOT NULL, teacherid INT NOT NULL, content LONGTEXT);
+CREATE TABLE studenthomework (id INT AUTO_INCREMENT PRIMARY KEY, homeworkid INT NOT NULL, studentid INT NOT NULL, score DECIMAL(6,1));
+CREATE TABLE course_resource (id INT AUTO_INCREMENT PRIMARY KEY, courseid INT NOT NULL, teacherid INT NOT NULL, title VARCHAR(200), filepath VARCHAR(500));
+CREATE TABLE student_attendance (id INT AUTO_INCREMENT PRIMARY KEY, courseid INT NOT NULL, classid INT NOT NULL, studentid INT NOT NULL, teacherid INT, attenddate DATE NOT NULL);
+CREATE TABLE notice (noticeid INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(200));
