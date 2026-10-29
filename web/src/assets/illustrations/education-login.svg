@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" fill="none">
+  <!-- Education Login Illustration - Student at desk with books -->
+  <!-- Desk -->
+  <rect x="120" y="260" width="260" height="12" rx="4" fill="#0284c7" opacity="0.8"/>
+  <rect x="140" y="272" width="12" height="80" rx="3" fill="#0284c7" opacity="0.6"/>
+  <rect x="348" y="272" width="12" height="80" rx="3" fill="#0284c7" opacity="0.6"/>
+
+  <!-- Book stack (left side of desk) -->
+  <rect x="145" y="232" width="60" height="12" rx="2" fill="#0ea5e9"/>
+  <rect x="148" y="220" width="54" height="12" rx="2" fill="#14b8a6"/>
+  <rect x="150" y="208" width="50" height="12" rx="2" fill="#38bdf8"/>
+
+  <!-- Open book (center of desk) -->
+  <path d="M220 258 Q250 248 280 258 L280 218 Q250 208 220 218 Z" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5"/>
+  <path d="M280 258 Q310 248 340 258 L340 218 Q310 208 280 218 Z" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5"/>
+  <line x1="280" y1="218" x2="280" y2="258" stroke="#0ea5e9" stroke-width="1.5"/>
+  <!-- Book lines -->
+  <line x1="232" y1="228" x2="268" y2="228" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+  <line x1="232" y1="236" x2="265" y2="236" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+  <line x1="232" y1="244" x2="260" y2="244" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+  <line x1="292" y1="228" x2="328" y2="228" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+  <line x1="292" y1="236" x2="325" y2="236" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+
+  <!-- Student figure -->
+  <!-- Head -->
+  <circle cx="280" cy="150" r="28" fill="#f59e0b" opacity="0.2"/>
+  <circle cx="280" cy="150" r="26" fill="#fef3c7"/>
+  <!-- Hair -->
+  <path d="M254 145 Q254 125 280 120 Q306 125 306 145" fill="#475569"/>
+  <!-- Eyes -->
+  <circle cx="271" cy="152" r="3" fill="#0f172a"/>
+  <circle cx="289" cy="152" r="3" fill="#0f172a"/>
+  <!-- Smile -->
+  <path d="M273 162 Q280 168 287 162" stroke="#0f172a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Body -->
+  <path d="M260 178 Q280 185 300 178 L305 210 Q280 215 255 210 Z" fill="#0ea5e9"/>
+  <!-- Arms -->
+  <path d="M258 188 L235 230 Q232 235 238 236 L260 220" fill="#0ea5e9" opacity="0.9"/>
+  <path d="M302 188 L325 230 Q328 235 322 236 L300 220" fill="#0ea5e9" opacity="0.9"/>
+
+  <!-- Pencil -->
+  <rect x="355" y="230" width="6" height="30" rx="1" fill="#f59e0b" transform="rotate(-15 358 245)"/>
+  <polygon points="355,260 358,272 361,260" fill="#fef3c7" transform="rotate(-15 358 266)"/>
+
+  <!-- Graduation cap (floating) -->
+  <polygon points="400,100 430,115 400,130 370,115" fill="#0f172a" opacity="0.8"/>
+  <rect x="396" y="90" width="8" height="12" rx="1" fill="#0f172a" opacity="0.8"/>
+  <line x1="430" y1="115" x2="430" y2="135" stroke="#f59e0b" stroke-width="2"/>
+  <circle cx="430" cy="137" r="3" fill="#f59e0b"/>
+
+  <!-- Decorative elements -->
+  <circle cx="100" cy="100" r="6" fill="#14b8a6" opacity="0.3"/>
+  <circle cx="420" cy="80" r="4" fill="#0ea5e9" opacity="0.3"/>
+  <circle cx="80" cy="200" r="5" fill="#f59e0b" opacity="0.2"/>
+  <circle cx="440" cy="200" r="8" fill="#14b8a6" opacity="0.15"/>
+
+  <!-- Stars/sparkles -->
+  <path d="M110 140 L113 148 L120 148 L114 153 L116 160 L110 156 L104 160 L106 153 L100 148 L107 148 Z" fill="#f59e0b" opacity="0.4"/>
+  <path d="M420 160 L422 165 L427 165 L423 168 L424 173 L420 170 L416 173 L417 168 L413 165 L418 165 Z" fill="#0ea5e9" opacity="0.3"/>
+</svg>

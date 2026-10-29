@@ -1,0 +1,1 @@
+"use strict";(self["webpackChunkzhiyan_academy_web"]=self["webpackChunkzhiyan_academy_web"]||[]).push([[4706],{14706:function(e,n,a){a.r(n),a.d(n,{default:function(){return d}});var t=a(56768),u=a(58125);const c={class:"page-container"};var s={__name:"AgentStudio",setup(e){return(e,n)=>((0,t.uX)(),(0,t.CE)("div",c,[(0,t.bF)(u.A,{mode:"student"})]))}};const r=s;var d=r}}]);

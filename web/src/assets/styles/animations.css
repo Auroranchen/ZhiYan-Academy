@@ -1,0 +1,17 @@
+/**
+ * 智慧作业收集系统 - 全局动画定义
+ */
+
+/* 路由切换过渡（保留定义，当前未使用） */
+.page-fade-enter-active { transition: opacity var(--duration-normal) var(--ease-spring-soft); }
+.page-fade-leave-active { transition: opacity var(--duration-fast) ease; }
+.page-fade-enter-from, .page-fade-leave-to { opacity: 0; }
+
+/* 入场动画 */
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in {
+  animation: slide-up-fade var(--duration-normal) var(--ease-spring-soft) both;
+}

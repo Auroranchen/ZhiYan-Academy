@@ -1,0 +1,75 @@
+/**
+ * 旧变量兼容层
+ *
+ * 设计令牌的唯一来源是 tokens.css。本文件只把历史遗留的 --color-* / --spacing-* /
+ * --radius-* 等旧变量名映射到新令牌上，让尚未改造的页面无需修改即可继承新主题与暗色模式。
+ *
+ * 新代码一律直接使用 --zy-* 令牌，不要再引用本文件中的任何变量。
+ * 页面改造完成后，对应的旧变量可以从这里逐条删除。
+ */
+
+:root {
+  /* 主色 */
+  --color-primary: var(--zy-brand-base);
+  --color-primary-light: var(--zy-palette-brand-400);
+  --color-primary-dark: var(--zy-brand-hover);
+  --color-primary-bg: var(--zy-brand-soft);
+
+  /* 辅助色 */
+  --color-secondary: var(--zy-palette-success-500);
+  --color-accent: var(--zy-palette-warning-500);
+
+  /* 语义色 */
+  --color-success: var(--zy-success-base);
+  --color-warning: var(--zy-warning-base);
+  --color-danger: var(--zy-danger-base);
+  --color-info: var(--zy-info-base);
+
+  /* 中性色 */
+  --color-text-primary: var(--zy-text-primary);
+  --color-text-secondary: var(--zy-text-secondary);
+  --color-text-muted: var(--zy-text-tertiary);
+  --color-bg-page: var(--zy-bg-canvas);
+  --color-bg-card: var(--zy-bg-surface);
+  --color-border: var(--zy-border-default);
+
+  /* 侧边栏（旧版左侧菜单遗留，顶栏改版后仅少量组件仍在引用） */
+  --color-sidebar-bg: var(--zy-palette-neutral-800);
+  --color-sidebar-text: var(--zy-palette-neutral-300);
+  --color-sidebar-active: var(--zy-brand-base);
+
+  /* 字体 */
+  --font-sans: var(--zy-font-sans);
+  --font-mono: var(--zy-font-mono);
+  --font-serif: var(--zy-font-serif);
+  --font-size-xs: var(--zy-font-size-xs);
+  --font-size-sm: var(--zy-font-size-sm);
+  --font-size-base: var(--zy-font-size-base);
+  --font-size-lg: var(--zy-font-size-xl);
+  --font-size-xl: var(--zy-font-size-2xl);
+
+  /* 间距 */
+  --spacing-sm: var(--zy-space-2);
+  --spacing-md: var(--zy-space-4);
+  --spacing-lg: var(--zy-space-6);
+  --spacing-xl: var(--zy-space-8);
+
+  /* 圆角 */
+  --radius-sm: var(--zy-radius-sm);
+  --radius-md: var(--zy-radius-md);
+  --radius-lg: var(--zy-radius-lg);
+  --radius-full: var(--zy-radius-full);
+
+  /* 阴影 */
+  --shadow-sm: var(--zy-shadow-xs);
+  --shadow-md: var(--zy-shadow-sm);
+  --shadow-lg: var(--zy-shadow-md);
+
+  /* 动效 */
+  --ease-spring: var(--zy-ease-spring);
+  --ease-spring-soft: var(--zy-ease-standard);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --duration-fast: var(--zy-duration-fast);
+  --duration-normal: var(--zy-duration-normal);
+  --duration-slow: var(--zy-duration-slow);
+}

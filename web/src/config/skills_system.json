@@ -1,0 +1,43 @@
+{
+  "skills": [
+    {
+      "id": "skill_fireball",
+      "name": "火焰冲击",
+      "icon": "🔥",
+      "type": "attack",
+      "trigger": "correct_answer",
+      "effect": "particle_explosion_red"
+    },
+    {
+      "id": "skill_shield",
+      "name": "知识护盾",
+      "icon": "🛡️",
+      "type": "defense",
+      "trigger": "combo_streak_3",
+      "effect": "shield_glow_blue"
+    },
+    {
+      "id": "skill_speed",
+      "name": "极速思维",
+      "icon": "⚡",
+      "type": "buff",
+      "trigger": "fast_answer",
+      "effect": "screen_shake"
+    },
+    {
+      "id": "teleport",
+      "name": "时空跳跃",
+      "icon": "🌀",
+      "type": "utility",
+      "trigger": "next_question",
+      "effect": "teleport_fade"
+    }
+  ],
+  "animation": {
+    "fps": 60,
+    "resolution": "1920x1080",
+    "style": "cartoon_2d",
+    "character": "hero_student",
+    "duration_per_question": 5000
+  }
+}

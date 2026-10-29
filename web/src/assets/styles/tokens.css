@@ -1,0 +1,481 @@
+/**
+ * 智枢学堂 · 设计令牌
+ *
+ * 这是全站唯一的设计变量来源，分三层：
+ *   1. 基础色板 --zy-palette-*  与语义无关的原始色阶，不要在业务样式里直接引用
+ *   2. 语义令牌 --zy-bg-* / --zy-text-* / --zy-border-* ...  随主题切换，业务样式只用这一层
+ *   3. Element Plus 桥接  把语义令牌写回 --el-* 变量，组件库自动跟随主题
+ *
+ * 主题切换通过 <html> 上的 class="dark" 完成，与 Element Plus 官方暗色方案一致。
+ * 密度切换通过 <html data-density="compact"> 完成。
+ */
+
+:root {
+  /* ============ 1. 基础色板 ============ */
+
+  /* 中性色 —— 蓝灰。整条中性轴偏向品牌蓝的色相，
+     让画布、描边、浅底这些「大面积」区域本身就带蓝，而不是只有按钮和选中项是蓝的。
+     只有 neutral-0（卡片面）保持纯白，与蓝画布拉开层次，保证正文可读性。
+     改这一组会同时影响全站 2000+ 处 var(--zy-*) 引用。 */
+  --zy-palette-neutral-0: #ffffff;
+  --zy-palette-neutral-25: #f7fafd;
+  --zy-palette-neutral-50: #eef3fa;
+  --zy-palette-neutral-100: #e3ebf5;
+  --zy-palette-neutral-200: #d3dfee;
+  --zy-palette-neutral-300: #b9c9dd;
+  --zy-palette-neutral-400: #8fa3be;
+  --zy-palette-neutral-500: #5d7089;
+  --zy-palette-neutral-600: #4a5c73;
+  --zy-palette-neutral-700: #35465b;
+  --zy-palette-neutral-800: #243347;
+  --zy-palette-neutral-900: #16233a;
+  --zy-palette-neutral-950: #0d1a2b;
+
+  /* 品牌蓝 */
+  --zy-palette-brand-50: #eff6ff;
+  --zy-palette-brand-100: #dbeafe;
+  --zy-palette-brand-200: #bfdbfe;
+  --zy-palette-brand-300: #93c5fd;
+  --zy-palette-brand-400: #60a5fa;
+  --zy-palette-brand-500: #3b82f6;
+  --zy-palette-brand-600: #2563eb;
+  --zy-palette-brand-700: #1d4ed8;
+  --zy-palette-brand-800: #1e40af;
+  --zy-palette-brand-900: #1e3a8a;
+
+  /* 语义色阶 */
+  --zy-palette-success-50: #ecfdf5;
+  --zy-palette-success-100: #d1fae5;
+  --zy-palette-success-500: #10b981;
+  --zy-palette-success-600: #059669;
+  --zy-palette-success-700: #047857;
+
+  --zy-palette-warning-50: #fffbeb;
+  --zy-palette-warning-100: #fef3c7;
+  --zy-palette-warning-500: #f59e0b;
+  --zy-palette-warning-600: #d97706;
+  --zy-palette-warning-700: #b45309;
+
+  --zy-palette-danger-50: #fef2f2;
+  --zy-palette-danger-100: #fee2e2;
+  --zy-palette-danger-500: #ef4444;
+  --zy-palette-danger-600: #dc2626;
+  --zy-palette-danger-700: #b91c1c;
+
+  --zy-palette-info-50: #f0f9ff;
+  --zy-palette-info-100: #e0f2fe;
+  --zy-palette-info-500: #0ea5e9;
+  --zy-palette-info-600: #0284c7;
+  --zy-palette-info-700: #0369a1;
+
+  /* 数据可视化序列，图表按顺序取用，保证全站图表配色一致。
+     整体收在蓝色系亲属区间（蓝 → 青 → 靛 → 蓝绿 → 紫 → 灰蓝），
+     去掉了原本的琥珀/粉/橙等暖色。
+     注意：8 条序列同处一个色相家族，天生比多色相更容易看混——
+     序列较多时建议配合直接标注或图案区分，不要只靠颜色。 */
+  --zy-chart-1: #2563eb;
+  --zy-chart-2: #0891b2;
+  --zy-chart-3: #6366f1;
+  --zy-chart-4: #0d9488;
+  --zy-chart-5: #7c3aed;
+  --zy-chart-6: #64748b;
+  --zy-chart-7: #38bdf8;
+  --zy-chart-8: #1e3a8a;
+
+  /* ============ 2. 语义令牌（亮色） ============ */
+
+  /* 背景层级：canvas 最底 → surface 内容卡 → raised 浮层 */
+  --zy-bg-canvas: var(--zy-palette-neutral-50);
+  --zy-bg-surface: var(--zy-palette-neutral-0);
+  --zy-bg-raised: var(--zy-palette-neutral-0);
+  --zy-bg-sunken: var(--zy-palette-neutral-100);
+  --zy-bg-subtle: var(--zy-palette-neutral-50);
+  --zy-bg-hover: rgba(16, 24, 40, 0.04);
+  --zy-bg-active: rgba(16, 24, 40, 0.07);
+  --zy-bg-overlay: rgba(11, 17, 29, 0.45);
+  /* 半透明层，供顶栏毛玻璃与加载遮罩使用 */
+  --zy-bg-glass: rgba(255, 255, 255, 0.86);
+  --zy-bg-glass-strong: rgba(255, 255, 255, 0.94);
+  --zy-bg-scrim: rgba(255, 255, 255, 0.7);
+
+  /* 文字层级 */
+  --zy-text-primary: var(--zy-palette-neutral-900);
+  --zy-text-secondary: var(--zy-palette-neutral-600);
+  --zy-text-tertiary: var(--zy-palette-neutral-500);
+  --zy-text-disabled: var(--zy-palette-neutral-400);
+  --zy-text-inverse: var(--zy-palette-neutral-0);
+  --zy-text-link: var(--zy-palette-brand-600);
+
+  /* 描边：企业级界面以边框而非阴影建立层级 */
+  --zy-border-subtle: var(--zy-palette-neutral-100);
+  --zy-border-default: var(--zy-palette-neutral-200);
+  --zy-border-strong: var(--zy-palette-neutral-300);
+  --zy-border-focus: var(--zy-palette-brand-600);
+
+  /* 品牌 */
+  --zy-brand-base: var(--zy-palette-brand-600);
+  --zy-brand-hover: var(--zy-palette-brand-700);
+  --zy-brand-active: var(--zy-palette-brand-800);
+  --zy-brand-soft: var(--zy-palette-brand-50);
+  --zy-brand-soft-hover: var(--zy-palette-brand-100);
+  --zy-brand-border: var(--zy-palette-brand-200);
+  --zy-brand-on: var(--zy-palette-neutral-0);
+
+  /* 状态 */
+  --zy-success-base: var(--zy-palette-success-600);
+  --zy-success-soft: var(--zy-palette-success-50);
+  --zy-success-border: var(--zy-palette-success-100);
+  --zy-warning-base: var(--zy-palette-warning-600);
+  --zy-warning-soft: var(--zy-palette-warning-50);
+  --zy-warning-border: var(--zy-palette-warning-100);
+  --zy-danger-base: var(--zy-palette-danger-600);
+  --zy-danger-soft: var(--zy-palette-danger-50);
+  --zy-danger-border: var(--zy-palette-danger-100);
+  --zy-info-base: var(--zy-palette-info-600);
+  --zy-info-soft: var(--zy-palette-info-50);
+  --zy-info-border: var(--zy-palette-info-100);
+
+  /* 代码区：编程题的代码块两种主题下都保持深色，与正文区分 */
+  --zy-code-bg: #1e1e1e;
+  --zy-code-text: #d4d4d4;
+  --zy-code-placeholder: #7a7a7a;
+  --zy-code-border: #333333;
+
+  /* 外壳（顶栏 / 导航 / 移动抽屉）
+     刻意在明暗两种主题下都保持深色，与官网首页的深色导航同一调性，
+     沿用上面 --zy-code-* 的「双主题恒定」先例。
+     注意：外壳是暗底，其上的品牌色必须用 brand-500 —— brand-600(#2563eb)
+     在 #0a0b0e 上只有 3.79:1，不达 WCAG AA 4.5:1。 */
+  --zy-shell-bg: #0d1a2b;
+  --zy-shell-bg-glass: rgba(13, 26, 43, 0.94);
+  --zy-shell-bg-glass-strong: rgba(13, 26, 43, 0.82);
+  --zy-shell-text: #e8eef7;
+  --zy-shell-text-muted: rgba(232, 238, 247, 0.66);
+  --zy-shell-border: rgba(255, 255, 255, 0.1);
+  --zy-shell-hover: rgba(255, 255, 255, 0.08);
+  --zy-shell-active: var(--zy-palette-brand-500);
+
+  /* ============ 3. 排版 ============ */
+  --zy-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                  'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+                  'Noto Sans SC', sans-serif;
+  --zy-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas,
+                  'Liberation Mono', Menlo, monospace;
+  /* 衬线只用于「品牌位」的数字与强调——官网首页的统计数字、斜体强调都用它。
+     不要用到表格、表单等数据密集区域。 */
+  --zy-font-serif: Georgia, 'Songti SC', 'Noto Serif SC',
+                   'Source Han Serif SC', serif;
+
+  /* 14px 基准，中后台密集信息的通用尺度 */
+  --zy-font-size-xs: 12px;
+  --zy-font-size-sm: 13px;
+  --zy-font-size-base: 14px;
+  --zy-font-size-md: 15px;
+  --zy-font-size-lg: 16px;
+  --zy-font-size-xl: 18px;
+  --zy-font-size-2xl: 20px;
+  --zy-font-size-3xl: 24px;
+  --zy-font-size-4xl: 30px;
+
+  --zy-line-height-tight: 1.25;
+  --zy-line-height-normal: 1.5;
+  --zy-line-height-relaxed: 1.7;
+
+  --zy-font-weight-normal: 400;
+  --zy-font-weight-medium: 500;
+  --zy-font-weight-semibold: 600;
+  --zy-font-weight-bold: 700;
+
+  --zy-letter-spacing-tight: -0.01em;
+  --zy-letter-spacing-wide: 0.02em;
+
+  /* ============ 4. 间距（4px 基数） ============ */
+  --zy-space-1: 4px;
+  --zy-space-2: 8px;
+  --zy-space-3: 12px;
+  --zy-space-4: 16px;
+  --zy-space-5: 20px;
+  --zy-space-6: 24px;
+  --zy-space-8: 32px;
+  --zy-space-10: 40px;
+  --zy-space-12: 48px;
+  --zy-space-16: 64px;
+
+  /* ============ 5. 圆角 ============ */
+  --zy-radius-xs: 4px;
+  --zy-radius-sm: 6px;
+  --zy-radius-md: 8px;
+  --zy-radius-lg: 12px;
+  --zy-radius-xl: 16px;
+  --zy-radius-full: 9999px;
+
+  /* 控件与容器各自固定一个圆角，避免全站圆角大小不一 */
+  --zy-radius-control: var(--zy-radius-sm);
+  --zy-radius-surface: var(--zy-radius-lg);
+
+  /* ============ 6. 阴影（克制，仅用于真正的浮层） ============ */
+  --zy-shadow-none: none;
+  --zy-shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --zy-shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --zy-shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --zy-shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --zy-shadow-xl: 0 20px 24px -4px rgba(16, 24, 40, 0.1), 0 8px 8px -4px rgba(16, 24, 40, 0.04);
+  --zy-shadow-focus: 0 0 0 3px color-mix(in srgb, var(--zy-brand-base) 18%, transparent);
+
+  /* ============ 7. 层级 ============ */
+  --zy-z-base: 1;
+  --zy-z-sticky: 100;
+  --zy-z-header: 1000;
+  --zy-z-drawer: 1500;
+  --zy-z-dialog: 2000;
+  --zy-z-popover: 2500;
+  --zy-z-message: 3000;
+
+  /* ============ 8. 动效 ============ */
+  --zy-duration-instant: 80ms;
+  --zy-duration-fast: 140ms;
+  --zy-duration-normal: 220ms;
+  --zy-duration-slow: 360ms;
+  --zy-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --zy-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --zy-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --zy-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ============ 9. 布局与密度 ============ */
+  --zy-layout-max-width: 1520px;
+  --zy-header-height: 64px;
+  --zy-control-height-sm: 28px;
+  --zy-control-height: 34px;
+  --zy-control-height-lg: 40px;
+  --zy-page-padding-x: var(--zy-space-6);
+  --zy-page-padding-y: var(--zy-space-6);
+  --zy-surface-padding: var(--zy-space-6);
+  --zy-table-cell-padding-y: 10px;
+  --zy-stack-gap: var(--zy-space-4);
+}
+
+/* ============ 暗色主题 ============ */
+html.dark {
+  --zy-bg-canvas: var(--zy-palette-neutral-950);
+  --zy-bg-surface: var(--zy-palette-neutral-900);
+  --zy-bg-raised: var(--zy-palette-neutral-800);
+  --zy-bg-sunken: #111d30;
+  --zy-bg-subtle: rgba(255, 255, 255, 0.03);
+  --zy-bg-hover: rgba(255, 255, 255, 0.06);
+  --zy-bg-active: rgba(255, 255, 255, 0.1);
+  --zy-bg-overlay: rgba(0, 0, 0, 0.6);
+  --zy-bg-glass: rgba(19, 32, 51, 0.86);
+  --zy-bg-glass-strong: rgba(19, 32, 51, 0.95);
+  --zy-bg-scrim: rgba(19, 32, 51, 0.7);
+
+  --zy-text-primary: #e8eef7;
+  --zy-text-secondary: #a9bdd6;
+  --zy-text-tertiary: #7d93ae;
+  --zy-text-disabled: #5a6d85;
+  --zy-text-inverse: var(--zy-palette-neutral-900);
+  --zy-text-link: var(--zy-palette-brand-400);
+
+  --zy-border-subtle: rgba(255, 255, 255, 0.06);
+  --zy-border-default: rgba(255, 255, 255, 0.11);
+  --zy-border-strong: rgba(255, 255, 255, 0.18);
+  --zy-border-focus: var(--zy-palette-brand-400);
+
+  --zy-brand-base: var(--zy-palette-brand-500);
+  --zy-brand-hover: var(--zy-palette-brand-400);
+  --zy-brand-active: var(--zy-palette-brand-300);
+  --zy-brand-soft: rgba(59, 130, 246, 0.14);
+  --zy-brand-soft-hover: rgba(59, 130, 246, 0.22);
+  --zy-brand-border: rgba(59, 130, 246, 0.32);
+  --zy-brand-on: #0d1a2b;
+
+  --zy-success-base: var(--zy-palette-success-500);
+  --zy-success-soft: rgba(16, 185, 129, 0.14);
+  --zy-success-border: rgba(16, 185, 129, 0.3);
+  --zy-warning-base: var(--zy-palette-warning-500);
+  --zy-warning-soft: rgba(245, 158, 11, 0.14);
+  --zy-warning-border: rgba(245, 158, 11, 0.3);
+  --zy-danger-base: var(--zy-palette-danger-500);
+  --zy-danger-soft: rgba(239, 68, 68, 0.14);
+  --zy-danger-border: rgba(239, 68, 68, 0.3);
+  --zy-info-base: var(--zy-palette-info-500);
+  --zy-info-soft: rgba(14, 165, 233, 0.14);
+  --zy-info-border: rgba(14, 165, 233, 0.3);
+
+  /* 暗色下阴影几乎不可见，层级改由描边承担 */
+  --zy-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --zy-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --zy-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.5);
+  --zy-shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.55);
+  --zy-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --zy-shadow-focus: 0 0 0 3px color-mix(in srgb, var(--zy-brand-base) 26%, transparent);
+
+  --zy-chart-1: #60a5fa;
+  --zy-chart-2: #22d3ee;
+  --zy-chart-3: #818cf8;
+  --zy-chart-4: #2dd4bf;
+  --zy-chart-5: #a78bfa;
+  --zy-chart-6: #94a3b8;
+  --zy-chart-7: #7dd3fc;
+  --zy-chart-8: #4f46e5;
+}
+
+/* ============ 紧凑密度 ============ */
+html[data-density='compact'] {
+  --zy-control-height-sm: 24px;
+  --zy-control-height: 30px;
+  --zy-control-height-lg: 36px;
+  --zy-page-padding-x: var(--zy-space-4);
+  --zy-page-padding-y: var(--zy-space-4);
+  --zy-surface-padding: var(--zy-space-4);
+  --zy-table-cell-padding-y: 6px;
+  --zy-stack-gap: var(--zy-space-3);
+}
+
+/* ============ Element Plus 桥接 ============ */
+/* 组件库的所有变量都指回语义令牌，切主题时组件自动跟随，无需逐个覆盖样式 */
+:root,
+html.dark {
+  --el-color-primary: var(--zy-brand-base);
+  --el-color-primary-light-3: var(--zy-palette-brand-400);
+  --el-color-primary-light-5: var(--zy-palette-brand-300);
+  --el-color-primary-light-7: var(--zy-palette-brand-200);
+  --el-color-primary-light-8: var(--zy-palette-brand-100);
+  --el-color-primary-light-9: var(--zy-brand-soft);
+  --el-color-primary-dark-2: var(--zy-brand-hover);
+
+  /* 状态色的 -light-3/5/7/8 与 -dark-2 原先没有桥接，plain 按钮、el-tag、
+     el-alert、el-message 因此一直用 Element Plus 自带的绿/橙/红。
+     这里用 color-mix 对着 --zy-bg-surface 调浅：亮色主题下 surface 是白，
+     暗色主题下是近黑，同一条规则即可同时服务两种主题。 */
+  --el-color-success: var(--zy-success-base);
+  --el-color-success-light-3: color-mix(in srgb, var(--zy-success-base) 30%, var(--zy-bg-surface));
+  --el-color-success-light-5: color-mix(in srgb, var(--zy-success-base) 50%, var(--zy-bg-surface));
+  --el-color-success-light-7: color-mix(in srgb, var(--zy-success-base) 70%, var(--zy-bg-surface));
+  --el-color-success-light-8: color-mix(in srgb, var(--zy-success-base) 80%, var(--zy-bg-surface));
+  --el-color-success-light-9: var(--zy-success-soft);
+  --el-color-success-dark-2: var(--zy-palette-success-700);
+
+  --el-color-warning: var(--zy-warning-base);
+  --el-color-warning-light-3: color-mix(in srgb, var(--zy-warning-base) 30%, var(--zy-bg-surface));
+  --el-color-warning-light-5: color-mix(in srgb, var(--zy-warning-base) 50%, var(--zy-bg-surface));
+  --el-color-warning-light-7: color-mix(in srgb, var(--zy-warning-base) 70%, var(--zy-bg-surface));
+  --el-color-warning-light-8: color-mix(in srgb, var(--zy-warning-base) 80%, var(--zy-bg-surface));
+  --el-color-warning-light-9: var(--zy-warning-soft);
+  --el-color-warning-dark-2: var(--zy-palette-warning-700);
+
+  --el-color-danger: var(--zy-danger-base);
+  --el-color-danger-light-3: color-mix(in srgb, var(--zy-danger-base) 30%, var(--zy-bg-surface));
+  --el-color-danger-light-5: color-mix(in srgb, var(--zy-danger-base) 50%, var(--zy-bg-surface));
+  --el-color-danger-light-7: color-mix(in srgb, var(--zy-danger-base) 70%, var(--zy-bg-surface));
+  --el-color-danger-light-8: color-mix(in srgb, var(--zy-danger-base) 80%, var(--zy-bg-surface));
+  --el-color-danger-light-9: var(--zy-danger-soft);
+  --el-color-danger-dark-2: var(--zy-palette-danger-700);
+
+  --el-color-error: var(--zy-danger-base);
+  --el-color-error-light-3: color-mix(in srgb, var(--zy-danger-base) 30%, var(--zy-bg-surface));
+  --el-color-error-light-5: color-mix(in srgb, var(--zy-danger-base) 50%, var(--zy-bg-surface));
+  --el-color-error-light-7: color-mix(in srgb, var(--zy-danger-base) 70%, var(--zy-bg-surface));
+  --el-color-error-light-8: color-mix(in srgb, var(--zy-danger-base) 80%, var(--zy-bg-surface));
+  --el-color-error-light-9: var(--zy-danger-soft);
+  --el-color-error-dark-2: var(--zy-palette-danger-700);
+
+  --el-color-info: var(--zy-text-tertiary);
+  --el-color-info-light-3: color-mix(in srgb, var(--zy-text-tertiary) 30%, var(--zy-bg-surface));
+  --el-color-info-light-5: color-mix(in srgb, var(--zy-text-tertiary) 50%, var(--zy-bg-surface));
+  --el-color-info-light-7: color-mix(in srgb, var(--zy-text-tertiary) 70%, var(--zy-bg-surface));
+  --el-color-info-light-8: color-mix(in srgb, var(--zy-text-tertiary) 80%, var(--zy-bg-surface));
+  --el-color-info-light-9: var(--zy-bg-sunken);
+  --el-color-info-dark-2: var(--zy-palette-info-700);
+
+  /* rgb 三元组：Element Plus 做半透明合成时读取。
+     注意这是字面量、不随主题切换——它们跟随亮色主题的语义基色，
+     暗色下与 500 步基色略有偏差，仅影响极淡的半透明效果。 */
+  --el-color-primary-rgb: 37, 99, 235;
+  --el-color-success-rgb: 5, 150, 105;
+  --el-color-warning-rgb: 217, 119, 6;
+  --el-color-danger-rgb: 220, 38, 38;
+  --el-color-error-rgb: 220, 38, 38;
+  --el-color-info-rgb: 109, 108, 99;
+
+  --el-color-white: var(--zy-palette-neutral-0);
+  --el-color-black: var(--zy-palette-neutral-950);
+
+  --el-bg-color: var(--zy-bg-surface);
+  --el-bg-color-page: var(--zy-bg-canvas);
+  --el-bg-color-overlay: var(--zy-bg-raised);
+
+  --el-text-color-primary: var(--zy-text-primary);
+  --el-text-color-regular: var(--zy-text-secondary);
+  --el-text-color-secondary: var(--zy-text-tertiary);
+  --el-text-color-placeholder: var(--zy-text-disabled);
+  --el-text-color-disabled: var(--zy-text-disabled);
+
+  --el-border-color: var(--zy-border-default);
+  --el-border-color-light: var(--zy-border-subtle);
+  --el-border-color-lighter: var(--zy-border-subtle);
+  --el-border-color-extra-light: var(--zy-border-subtle);
+  --el-border-color-dark: var(--zy-border-strong);
+  --el-border-color-darker: var(--zy-border-strong);
+
+  --el-fill-color: var(--zy-bg-sunken);
+  --el-fill-color-light: var(--zy-bg-subtle);
+  --el-fill-color-lighter: var(--zy-bg-subtle);
+  --el-fill-color-blank: var(--zy-bg-surface);
+  --el-fill-color-dark: var(--zy-bg-sunken);
+
+  --el-border-radius-base: var(--zy-radius-control);
+  --el-border-radius-small: var(--zy-radius-xs);
+  --el-border-radius-round: var(--zy-radius-full);
+
+  --el-font-size-base: var(--zy-font-size-base);
+  --el-font-size-small: var(--zy-font-size-sm);
+  --el-font-size-extra-small: var(--zy-font-size-xs);
+  --el-font-size-medium: var(--zy-font-size-lg);
+  --el-font-family: var(--zy-font-sans);
+
+  --el-box-shadow: var(--zy-shadow-md);
+  --el-box-shadow-light: var(--zy-shadow-sm);
+  --el-box-shadow-lighter: var(--zy-shadow-xs);
+  --el-box-shadow-dark: var(--zy-shadow-lg);
+
+  --el-component-size: var(--zy-control-height);
+  --el-component-size-small: var(--zy-control-height-sm);
+  --el-component-size-large: var(--zy-control-height-lg);
+
+  --el-transition-duration: var(--zy-duration-normal);
+  --el-transition-duration-fast: var(--zy-duration-fast);
+
+  --el-overlay-color-lighter: var(--zy-bg-overlay);
+  --el-mask-color: var(--zy-bg-overlay);
+
+  /* 禁用态三件套：EP 默认是自带的灰，不桥接就会在换色后显得脱节 */
+  --el-disabled-bg-color: var(--zy-bg-sunken);
+  --el-disabled-text-color: var(--zy-text-disabled);
+  --el-disabled-border-color: var(--zy-border-default);
+
+  --el-border-color-hover: var(--zy-border-strong);
+  --el-fill-color-darker: var(--zy-bg-sunken);
+  --el-fill-color-extra-light: var(--zy-bg-subtle);
+
+  --el-border-radius-circle: 100%;
+
+  --el-font-size-large: var(--zy-font-size-xl);
+  --el-font-size-extra-large: var(--zy-font-size-2xl);
+  --el-font-weight-primary: var(--zy-font-weight-medium);
+
+  /* 层级：此前 --zy-z-* 与 EP 的 --el-index-* 是两套互不相干的体系 */
+  --el-index-normal: var(--zy-z-base);
+  --el-index-top: var(--zy-z-dialog);
+  --el-index-popper: var(--zy-z-popover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

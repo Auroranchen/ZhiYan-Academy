@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Teacher Teaching Illustration -->
+
+  <!-- Whiteboard -->
+  <rect x="80" y="40" width="240" height="160" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <!-- Board content -->
+  <rect x="100" y="60" width="80" height="8" rx="3" fill="#0ea5e9" opacity="0.7"/>
+  <rect x="100" y="78" width="200" height="5" rx="2" fill="#94a3b8" opacity="0.3"/>
+  <rect x="100" y="90" width="180" height="5" rx="2" fill="#94a3b8" opacity="0.3"/>
+  <rect x="100" y="102" width="190" height="5" rx="2" fill="#94a3b8" opacity="0.3"/>
+  <!-- Chart on board -->
+  <rect x="100" y="120" width="20" height="50" rx="3" fill="#0ea5e9" opacity="0.4"/>
+  <rect x="128" y="135" width="20" height="35" rx="3" fill="#14b8a6" opacity="0.4"/>
+  <rect x="156" y="110" width="20" height="60" rx="3" fill="#0ea5e9" opacity="0.5"/>
+  <rect x="184" y="125" width="20" height="45" rx="3" fill="#14b8a6" opacity="0.5"/>
+  <rect x="212" y="105" width="20" height="65" rx="3" fill="#0ea5e9" opacity="0.6"/>
+  <!-- Board stand -->
+  <rect x="190" y="200" width="20" height="8" rx="2" fill="#cbd5e1"/>
+  <rect x="196" y="208" width="8" height="40" rx="2" fill="#94a3b8" opacity="0.6"/>
+  <path d="M180 248 L220 248 L210 240 L190 240 Z" fill="#94a3b8" opacity="0.4"/>
+
+  <!-- Teacher figure -->
+  <!-- Head -->
+  <circle cx="340" cy="120" r="26" fill="#fef3c7"/>
+  <!-- Hair -->
+  <path d="M314 115 Q316 95 340 88 Q364 95 366 115 Q366 108 360 105 Q340 100 320 105 Q314 108 314 115" fill="#475569"/>
+  <!-- Eyes -->
+  <circle cx="332" cy="122" r="2.5" fill="#0f172a"/>
+  <circle cx="348" cy="122" r="2.5" fill="#0f172a"/>
+  <!-- Smile -->
+  <path d="M335 132 Q340 137 345 132" stroke="#0f172a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- Body -->
+  <path d="M320 146 Q340 152 360 146 L364 210 Q340 215 316 210 Z" fill="#14b8a6"/>
+  <!-- Arm pointing at board -->
+  <path d="M320 158 Q290 150 260 145 Q255 144 256 148 L285 158 Q310 165 318 168" fill="#14b8a6" opacity="0.85"/>
+  <!-- Other arm -->
+  <path d="M360 158 Q370 180 368 200 Q367 205 362 202 L358 180" fill="#14b8a6" opacity="0.85"/>
+  <!-- Pointer stick -->
+  <line x1="256" y1="146" x2="230" y2="130" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="228" cy="128" r="3" fill="#ef4444" opacity="0.7"/>
+
+  <!-- Legs -->
+  <rect x="328" y="210" width="10" height="40" rx="3" fill="#0f172a" opacity="0.7"/>
+  <rect x="344" y="210" width="10" height="40" rx="3" fill="#0f172a" opacity="0.7"/>
+
+  <!-- Decorative elements -->
+  <!-- A+ grade -->
+  <circle cx="60" cy="80" r="18" fill="#22c55e" opacity="0.12"/>
+  <text x="60" y="85" text-anchor="middle" font-size="14" font-weight="bold" fill="#22c55e" opacity="0.5" font-family="Inter, sans-serif">A+</text>
+
+  <!-- Star -->
+  <path d="M50 180 L53 190 L63 190 L55 196 L58 206 L50 200 L42 206 L45 196 L37 190 L47 190 Z" fill="#f59e0b" opacity="0.3"/>
+
+  <!-- Decorative dots -->
+  <circle cx="370" cy="60" r="5" fill="#0ea5e9" opacity="0.2"/>
+  <circle cx="40" cy="140" r="4" fill="#14b8a6" opacity="0.2"/>
+  <circle cx="380" cy="260" r="6" fill="#f59e0b" opacity="0.15"/>
+</svg>
