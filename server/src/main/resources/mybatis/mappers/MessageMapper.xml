@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.MessageMapper">
+
+    <resultMap id="MessageResultMap" type="com.model.Message">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="sendertype" column="sendertype"/>
+        <result property="senderid" column="senderid"/>
+        <result property="receivertype" column="receivertype"/>
+        <result property="receiverid" column="receiverid"/>
+        <result property="isread" column="isread"/>
+        <result property="readtime" column="readtime"/>
+        <result property="createtime" column="createtime"/>
+        <result property="sendername" column="sendername"/>
+        <result property="receivername" column="receivername"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.model.Message" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (title, content, sendertype, senderid, receivertype, receiverid, isread, createtime)
+        VALUES (#{title}, #{content}, #{sendertype}, #{senderid}, #{receivertype}, #{receiverid}, 0, #{createtime})
+    </insert>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO message (title, content, sendertype, senderid, receivertype, receiverid, isread, createtime)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.title}, #{item.content}, #{item.sendertype}, #{item.senderid}, #{item.receivertype}, #{item.receiverid}, 0, #{item.createtime})
+        </foreach>
+    </insert>
+
+    <select id="findReceived" resultMap="MessageResultMap">
+        SELECT m.*,
+            CASE m.sendertype
+                WHEN 1 THEN (SELECT realname FROM admin WHERE adminid = m.senderid)
+                WHEN 2 THEN (SELECT teachername FROM teacher WHERE teacherid = m.senderid)
+            END as sendername
+        FROM message m
+        WHERE m.receivertype = #{receivertype} AND m.receiverid = #{receiverid}
+        <if test="isread != null">
+            AND m.isread = #{isread}
+        </if>
+        ORDER BY m.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countReceived" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM message
+        WHERE receivertype = #{receivertype} AND receiverid = #{receiverid}
+        <if test="isread != null">
+            AND isread = #{isread}
+        </if>
+    </select>
+
+    <select id="findSent" resultMap="MessageResultMap">
+        SELECT m.*,
+            CASE m.receivertype
+                WHEN 1 THEN (SELECT studentname FROM student WHERE studentid = m.receiverid)
+                WHEN 2 THEN (SELECT teachername FROM teacher WHERE teacherid = m.receiverid)
+                WHEN 3 THEN (SELECT classname FROM classinfo WHERE classid = m.receiverid)
+            END as receivername
+        FROM message m
+        WHERE m.sendertype = #{sendertype} AND m.senderid = #{senderid}
+        ORDER BY m.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countSent" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM message
+        WHERE sendertype = #{sendertype} AND senderid = #{senderid}
+    </select>
+
+    <select id="findById" resultMap="MessageResultMap">
+        SELECT m.*,
+            CASE m.sendertype
+                WHEN 1 THEN (SELECT realname FROM admin WHERE adminid = m.senderid)
+                WHEN 2 THEN (SELECT teachername FROM teacher WHERE teacherid = m.senderid)
+            END as sendername,
+            CASE m.receivertype
+                WHEN 1 THEN (SELECT studentname FROM student WHERE studentid = m.receiverid)
+                WHEN 2 THEN (SELECT teachername FROM teacher WHERE teacherid = m.receiverid)
+                WHEN 3 THEN (SELECT classname FROM classinfo WHERE classid = m.receiverid)
+            END as receivername
+        FROM message m
+        WHERE m.id = #{id}
+    </select>
+
+    <update id="markAsRead">
+        UPDATE message SET isread = 1, readtime = NOW() WHERE id = #{id}
+    </update>
+
+    <update id="markAllAsRead">
+        UPDATE message SET isread = 1, readtime = NOW()
+        WHERE receivertype = #{receivertype} AND receiverid = #{receiverid} AND isread = 0
+    </update>
+
+    <delete id="delete">
+        DELETE FROM message WHERE id = #{id}
+    </delete>
+
+    <select id="countUnread" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM message
+        WHERE receivertype = #{receivertype} AND receiverid = #{receiverid} AND isread = 0
+    </select>
+
+</mapper>

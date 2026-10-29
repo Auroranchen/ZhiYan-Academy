@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.CourseClassMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CourseClassResultMap" type="com.model.CourseClass">
+        <id property="id" column="id"/>
+        <result property="courseid" column="courseid"/>
+        <result property="classid" column="classid"/>
+        <result property="classname" column="classname"/>
+    </resultMap>
+
+    <!-- 根据课程ID查询关联的班级 -->
+    <select id="findByCourseid" resultMap="CourseClassResultMap">
+        SELECT cc.id, cc.courseid, cc.classid, ci.classname
+        FROM courseclass cc
+        LEFT JOIN classinfo ci ON cc.classid = ci.classid
+        WHERE cc.courseid = #{courseid}
+    </select>
+
+    <!-- 根据班级ID查询关联的课程 -->
+    <select id="findByClassid" resultMap="CourseClassResultMap">
+        SELECT cc.id, cc.courseid, cc.classid
+        FROM courseclass cc
+        WHERE cc.classid = #{classid}
+    </select>
+
+    <!-- 添加课程班级关联 -->
+    <insert id="insert" parameterType="com.model.CourseClass" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO courseclass (courseid, classid)
+        VALUES (#{courseid}, #{classid})
+    </insert>
+
+    <!-- 批量添加课程班级关联 -->
+    <insert id="insertBatch">
+        INSERT INTO courseclass (courseid, classid) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.courseid}, #{item.classid})
+        </foreach>
+    </insert>
+
+    <!-- 根据课程ID查询关联的班级ID列表 -->
+    <select id="findClassIdsByCourseId" resultType="java.lang.Integer">
+        SELECT classid FROM courseclass WHERE courseid = #{courseid}
+    </select>
+    
+    <select id="countByCourseIdAndClassId" resultType="int">
+        SELECT COUNT(*) FROM courseclass WHERE courseid = #{courseid} AND classid = #{classid}
+    </select>
+
+    <!-- 删除课程的所有班级关联 -->
+    <delete id="deleteByCourseId">
+        DELETE FROM courseclass WHERE courseid = #{courseid}
+    </delete>
+
+    <!-- 删除课程的所有班级关联（兼容旧方法名） -->
+    <delete id="deleteByCourseid">
+        DELETE FROM courseclass WHERE courseid = #{courseid}
+    </delete>
+
+    <!-- 删除班级的所有课程关联 -->
+    <delete id="deleteByClassid">
+        DELETE FROM courseclass WHERE classid = #{classid}
+    </delete>
+
+</mapper>

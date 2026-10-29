@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.HomeworkCommentMapper">
+
+    <resultMap id="HomeworkCommentResultMap" type="com.model.HomeworkComment">
+        <id property="id" column="id"/>
+        <result property="homeworkid" column="homeworkid"/>
+        <result property="studentid" column="studentid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="parentid" column="parentid"/>
+        <result property="content" column="content"/>
+        <result property="createtime" column="createtime"/>
+        <result property="studentname" column="studentname"/>
+        <result property="teachername" column="teachername"/>
+        <result property="homeworktitle" column="homeworktitle"/>
+    </resultMap>
+
+    <select id="findByHomeworkid" resultMap="HomeworkCommentResultMap">
+        SELECT hc.*, s.studentname, t.teachername, h.title as homeworktitle
+        FROM homework_comment hc
+        LEFT JOIN student s ON hc.studentid = s.studentid
+        LEFT JOIN teacher t ON hc.teacherid = t.teacherid
+        LEFT JOIN homework h ON hc.homeworkid = h.homeworkid
+        WHERE hc.homeworkid = #{homeworkid} AND hc.parentid = 0
+        ORDER BY hc.createtime DESC
+    </select>
+
+    <select id="findReplies" resultMap="HomeworkCommentResultMap">
+        SELECT hc.*, s.studentname, t.teachername
+        FROM homework_comment hc
+        LEFT JOIN student s ON hc.studentid = s.studentid
+        LEFT JOIN teacher t ON hc.teacherid = t.teacherid
+        WHERE hc.parentid = #{parentid}
+        ORDER BY hc.createtime ASC
+    </select>
+
+    <select id="findById" resultMap="HomeworkCommentResultMap">
+        SELECT hc.*, s.studentname, t.teachername, h.title as homeworktitle
+        FROM homework_comment hc
+        LEFT JOIN student s ON hc.studentid = s.studentid
+        LEFT JOIN teacher t ON hc.teacherid = t.teacherid
+        LEFT JOIN homework h ON hc.homeworkid = h.homeworkid
+        WHERE hc.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.model.HomeworkComment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO homework_comment (homeworkid, studentid, teacherid, parentid, content, createtime)
+        VALUES (#{homeworkid}, #{studentid}, #{teacherid}, #{parentid}, #{content}, #{createtime})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM homework_comment WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByHomeworkid">
+        DELETE FROM homework_comment WHERE homeworkid = #{homeworkid}
+    </delete>
+
+    <select id="countByHomeworkid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM homework_comment WHERE homeworkid = #{homeworkid}
+    </select>
+
+</mapper>

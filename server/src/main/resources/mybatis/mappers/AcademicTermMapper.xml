@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.AcademicTermMapper">
+    <resultMap id="AcademicTermResultMap" type="com.model.AcademicTerm">
+        <id property="termId" column="term_id"/>
+        <result property="termCode" column="term_code"/>
+        <result property="termName" column="term_name"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="status" column="status"/>
+        <result property="current" column="is_current"/>
+        <result property="courseCount" column="course_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="columns">
+        t.term_id, t.term_code, t.term_name, t.start_date, t.end_date,
+        t.status, t.is_current, t.created_at, t.updated_at,
+        (SELECT COUNT(*) FROM course c WHERE c.semester = t.term_code) AS course_count
+    </sql>
+
+    <select id="findList" resultMap="AcademicTermResultMap">
+        SELECT <include refid="columns"/>
+        FROM academic_term t
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (t.term_code LIKE CONCAT('%', #{keyword}, '%')
+                     OR t.term_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null and status != ''">
+                AND t.status = #{status}
+            </if>
+        </where>
+        ORDER BY t.is_current DESC, t.start_date DESC, t.term_code DESC
+    </select>
+
+    <select id="findOptions" resultMap="AcademicTermResultMap">
+        SELECT <include refid="columns"/>
+        FROM academic_term t
+        WHERE t.status != 'ARCHIVED' OR t.is_current = 1
+        ORDER BY t.is_current DESC, t.start_date DESC, t.term_code DESC
+    </select>
+
+    <select id="findCurrent" resultMap="AcademicTermResultMap">
+        SELECT <include refid="columns"/>
+        FROM academic_term t
+        WHERE t.is_current = 1
+        LIMIT 1
+    </select>
+
+    <select id="findById" resultMap="AcademicTermResultMap">
+        SELECT <include refid="columns"/>
+        FROM academic_term t
+        WHERE t.term_id = #{termId}
+    </select>
+
+    <select id="findByCode" resultMap="AcademicTermResultMap">
+        SELECT <include refid="columns"/>
+        FROM academic_term t
+        WHERE t.term_code = #{termCode}
+    </select>
+
+    <select id="countByCodeExcludingId" resultType="int">
+        SELECT COUNT(*) FROM academic_term
+        WHERE term_code = #{termCode}
+        <if test="termId != null">AND term_id != #{termId}</if>
+    </select>
+
+    <insert id="insert" parameterType="com.model.AcademicTerm" useGeneratedKeys="true" keyProperty="termId">
+        INSERT INTO academic_term
+            (term_code, term_name, start_date, end_date, status, is_current, created_at, updated_at)
+        VALUES
+            (#{termCode}, #{termName}, #{startDate}, #{endDate}, #{status}, #{current}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.model.AcademicTerm">
+        UPDATE academic_term
+        SET term_code = #{termCode}, term_name = #{termName}, start_date = #{startDate},
+            end_date = #{endDate}, updated_at = NOW()
+        WHERE term_id = #{termId}
+    </update>
+
+    <update id="archiveActiveTerms">
+        UPDATE academic_term
+        SET is_current = 0,
+            status = CASE WHEN status = 'ACTIVE' THEN 'ARCHIVED' ELSE status END,
+            updated_at = NOW()
+        WHERE is_current = 1 OR status = 'ACTIVE'
+    </update>
+
+    <update id="updateState">
+        UPDATE academic_term
+        SET status = #{status}, is_current = #{current}, updated_at = NOW()
+        WHERE term_id = #{termId}
+    </update>
+
+    <select id="countCourses" resultType="int">
+        SELECT COUNT(*) FROM course WHERE semester = #{termCode}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM academic_term WHERE term_id = #{termId}
+    </delete>
+</mapper>

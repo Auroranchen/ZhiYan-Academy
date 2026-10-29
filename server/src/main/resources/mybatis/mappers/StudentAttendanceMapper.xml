@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.StudentAttendanceMapper">
+
+    <resultMap id="StudentAttendanceResultMap" type="com.model.StudentAttendance">
+        <id property="id" column="id"/>
+        <result property="courseid" column="courseid"/>
+        <result property="classid" column="classid"/>
+        <result property="studentid" column="studentid"/>
+        <result property="attenddate" column="attenddate"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
+        <result property="createtime" column="createtime"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="sessionId" column="session_id"/>
+        <result property="coursename" column="coursename"/>
+        <result property="classname" column="classname"/>
+        <result property="studentname" column="studentname"/>
+        <result property="studentno" column="studentno"/>
+        <result property="teachername" column="teachername"/>
+    </resultMap>
+
+    <select id="findList" resultMap="StudentAttendanceResultMap">
+        SELECT sa.*, c.coursename, ci.classname, s.studentname, s.studentno, t.teachername
+        FROM student_attendance sa
+        LEFT JOIN course c ON sa.courseid = c.courseid
+        LEFT JOIN classinfo ci ON sa.classid = ci.classid
+        LEFT JOIN student s ON sa.studentid = s.studentid
+        LEFT JOIN teacher t ON sa.teacherid = t.teacherid
+        <where>
+            <if test="courseid != null">AND sa.courseid = #{courseid}</if>
+            <if test="classid != null">AND sa.classid = #{classid}</if>
+            <if test="attenddate != null">AND sa.attenddate = #{attenddate}</if>
+            <if test="courseTeacherId != null">AND c.teacherid = #{courseTeacherId}</if>
+        </where>
+        ORDER BY sa.attenddate DESC, s.studentno ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM student_attendance sa
+        LEFT JOIN course c ON sa.courseid = c.courseid
+        <where>
+            <if test="courseid != null">AND sa.courseid = #{courseid}</if>
+            <if test="classid != null">AND sa.classid = #{classid}</if>
+            <if test="attenddate != null">AND sa.attenddate = #{attenddate}</if>
+            <if test="courseTeacherId != null">AND c.teacherid = #{courseTeacherId}</if>
+        </where>
+    </select>
+
+    <select id="findById" resultMap="StudentAttendanceResultMap">
+        SELECT sa.*, c.coursename, ci.classname, s.studentname, s.studentno, t.teachername
+        FROM student_attendance sa
+        LEFT JOIN course c ON sa.courseid = c.courseid
+        LEFT JOIN classinfo ci ON sa.classid = ci.classid
+        LEFT JOIN student s ON sa.studentid = s.studentid
+        LEFT JOIN teacher t ON sa.teacherid = t.teacherid
+        WHERE sa.id = #{id}
+    </select>
+
+    <select id="findByUnique" resultMap="StudentAttendanceResultMap">
+        SELECT * FROM student_attendance
+        WHERE courseid = #{courseid} AND classid = #{classid} AND studentid = #{studentid} AND attenddate = #{attenddate}
+    </select>
+
+    <select id="findByCourseClassDate" resultMap="StudentAttendanceResultMap">
+        SELECT * FROM student_attendance
+        WHERE courseid = #{courseid} AND classid = #{classid} AND attenddate = #{attenddate}
+    </select>
+
+    <select id="findByStudentid" resultMap="StudentAttendanceResultMap">
+        SELECT sa.*, c.coursename, ci.classname
+        FROM student_attendance sa
+        LEFT JOIN course c ON sa.courseid = c.courseid
+        LEFT JOIN classinfo ci ON sa.classid = ci.classid
+        WHERE sa.studentid = #{studentid}
+        <if test="courseid != null">AND sa.courseid = #{courseid}</if>
+        ORDER BY sa.attenddate DESC
+    </select>
+
+    <insert id="insert" parameterType="com.model.StudentAttendance" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student_attendance (courseid, classid, studentid, attenddate, status, remark, createtime, teacherid, session_id)
+        VALUES (#{courseid}, #{classid}, #{studentid}, #{attenddate}, #{status}, #{remark}, #{createtime}, #{teacherid}, #{sessionId})
+    </insert>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO student_attendance (courseid, classid, studentid, attenddate, status, remark, createtime, teacherid, session_id)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.courseid}, #{item.classid}, #{item.studentid}, #{item.attenddate}, #{item.status}, #{item.remark}, #{item.createtime}, #{item.teacherid}, #{item.sessionId})
+        </foreach>
+        ON DUPLICATE KEY UPDATE status = VALUES(status), remark = VALUES(remark), createtime = VALUES(createtime), session_id = VALUES(session_id)
+    </insert>
+
+    <update id="update" parameterType="com.model.StudentAttendance">
+        UPDATE student_attendance
+        SET status = #{status}, remark = #{remark}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateCheckin" parameterType="com.model.StudentAttendance">
+        UPDATE student_attendance
+        SET status = #{status}, remark = #{remark}, session_id = #{sessionId}, createtime = #{createtime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM student_attendance WHERE id = #{id}
+    </delete>
+
+    <select id="countByStatus" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM student_attendance
+        WHERE 1=1
+        <if test="courseid != null">AND courseid = #{courseid}</if>
+        <if test="classid != null">AND classid = #{classid}</if>
+        <if test="status != null">AND status = #{status}</if>
+    </select>
+
+</mapper>

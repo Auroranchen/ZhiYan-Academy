@@ -1,0 +1,47 @@
+{
+  "name": "zhiyan-academy-web",
+  "description": "智枢学堂 ZhiHub Academy",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "lint:ci": "vue-cli-service lint --no-fix --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{js,vue,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{js,vue,css,json}\"",
+    "check:tokens": "node scripts/check-tokens.js",
+    "test": "vitest run",
+    "verify": "npm run lint:ci && npm run check:tokens && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@iconify/vue": "^5.0.0",
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "^5.1.12",
+    "axios": "^1.6.2",
+    "core-js": "^3.33.3",
+    "dompurify": "^3.4.7",
+    "echarts": "^5.4.3",
+    "element-plus": "^2.14.4",
+    "html2pdf.js": "^0.12.1",
+    "vue": "^3.3.11",
+    "vue-router": "^4.2.5",
+    "vuex": "^4.1.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~5.0.8",
+    "@vue/cli-plugin-eslint": "~5.0.8",
+    "@vue/cli-service": "~5.0.8",
+    "eslint": "^8.55.0",
+    "eslint-plugin-vue": "^9.19.2",
+    "fast-check": "^4.5.3",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.6",
+    "vitest": "^4.0.18"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}

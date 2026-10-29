@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.DashboardMapper">
+
+    <select id="countStudents" resultType="long">SELECT COUNT(*) FROM student</select>
+    <select id="countTeachers" resultType="long">SELECT COUNT(*) FROM teacher</select>
+    <select id="countCourses" resultType="long">SELECT COUNT(*) FROM course</select>
+    <select id="countHomeworks" resultType="long">SELECT COUNT(*) FROM homework</select>
+    <select id="countSubmissions" resultType="long">
+        SELECT COUNT(*) FROM studenthomework WHERE status IN (1, 2, 3)
+    </select>
+    <select id="countGraded" resultType="long">
+        SELECT COUNT(*) FROM studenthomework WHERE status = 2
+    </select>
+    <select id="avgScore" resultType="java.lang.Double">
+        SELECT ROUND(AVG(score), 1) FROM studenthomework WHERE status = 2 AND score IS NOT NULL
+    </select>
+
+    <select id="homeworkByCourse" resultType="java.util.Map">
+        SELECT c.coursename AS name, COUNT(h.homeworkid) AS value
+        FROM course c
+        LEFT JOIN homework h ON h.courseid = c.courseid
+        GROUP BY c.courseid, c.coursename
+        HAVING value > 0
+        ORDER BY value DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="scoreDistribution" resultType="java.util.Map">
+        SELECT seg AS name, COUNT(*) AS value FROM (
+            SELECT CASE
+                WHEN score >= 90 THEN '优秀(90-100)'
+                WHEN score >= 80 THEN '良好(80-89)'
+                WHEN score >= 70 THEN '中等(70-79)'
+                WHEN score >= 60 THEN '及格(60-69)'
+                ELSE '不及格(60以下)'
+            END AS seg
+            FROM studenthomework
+            WHERE status = 2 AND score IS NOT NULL
+        ) t
+        GROUP BY seg
+    </select>
+
+    <select id="submitTrend" resultType="java.util.Map">
+        SELECT DATE_FORMAT(submittime, '%Y-%m-%d') AS day, COUNT(*) AS cnt
+        FROM studenthomework
+        WHERE submittime IS NOT NULL
+          AND submittime >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY DATE_FORMAT(submittime, '%Y-%m-%d')
+        ORDER BY day ASC
+    </select>
+
+    <select id="avgScoreByCourse" resultType="java.util.Map">
+        SELECT c.coursename AS name, ROUND(AVG(sh.score), 1) AS value
+        FROM studenthomework sh
+        JOIN homework h ON sh.homeworkid = h.homeworkid
+        JOIN course c ON h.courseid = c.courseid
+        WHERE sh.status = 2 AND sh.score IS NOT NULL
+        GROUP BY c.courseid, c.coursename
+        ORDER BY value DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="studentsByMajor" resultType="java.util.Map">
+        SELECT m.majorname AS name, COUNT(s.studentid) AS value
+        FROM major m
+        LEFT JOIN student s ON s.majorid = m.majorid
+        GROUP BY m.majorid, m.majorname
+        HAVING value > 0
+        ORDER BY value DESC
+    </select>
+
+    <select id="aiUsage" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS totalExplains,
+            IFNULL(ROUND(AVG(duration)), 0) AS avgDuration,
+            IFNULL(SUM(is_cache_hit), 0) AS cacheHits
+        FROM ai_explain_log
+    </select>
+
+    <select id="teacherWorkload" resultType="java.util.Map">
+        SELECT t.teachername AS name, COUNT(c.courseid) AS value
+        FROM teacher t
+        LEFT JOIN course c ON c.teacherid = t.teacherid
+        GROUP BY t.teacherid, t.teachername
+        HAVING value > 0
+        ORDER BY value DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

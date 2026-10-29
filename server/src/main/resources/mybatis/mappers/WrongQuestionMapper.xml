@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.WrongQuestionMapper">
+
+    <resultMap id="WrongQuestionResultMap" type="com.model.WrongQuestion">
+        <id property="id" column="id"/>
+        <result property="studentid" column="studentid"/>
+        <result property="courseid" column="courseid"/>
+        <result property="sourceid" column="sourceid"/>
+        <result property="source" column="source"/>
+        <result property="questionId" column="question_id"/>
+        <result property="questionType" column="question_type"/>
+        <result property="questionTitle" column="question_title"/>
+        <result property="optionsJson" column="options_json"/>
+        <result property="correctAnswer" column="correct_answer"/>
+        <result property="studentAnswer" column="student_answer"/>
+        <result property="wrongCount" column="wrong_count"/>
+        <result property="mastered" column="mastered"/>
+        <result property="lastWrongTime" column="last_wrong_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="coursename" column="coursename"/>
+    </resultMap>
+
+    <select id="findGradableSubmissions" resultType="java.util.Map">
+        SELECT sh.homeworkid AS homeworkid,
+               h.courseid AS courseid,
+               c.coursename AS coursename,
+               h.content AS homeworkcontent,
+               sh.content AS studentcontent,
+               sh.submittime AS submittime
+        FROM studenthomework sh
+        JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        WHERE sh.studentid = #{studentid}
+          AND h.type = 1
+          AND sh.status IN (1, 2)
+          AND sh.content IS NOT NULL
+          AND sh.content != ''
+    </select>
+
+    <insert id="upsert" parameterType="com.model.WrongQuestion">
+        INSERT INTO student_wrong_question
+            (studentid, courseid, sourceid, source, question_id, question_type, question_title,
+             options_json, correct_answer, student_answer, wrong_count, mastered, last_wrong_time, create_time)
+        VALUES
+            (#{studentid}, #{courseid}, #{sourceid}, #{source}, #{questionId}, #{questionType}, #{questionTitle},
+             #{optionsJson}, #{correctAnswer}, #{studentAnswer}, #{wrongCount}, 0, #{lastWrongTime}, NOW())
+        ON DUPLICATE KEY UPDATE
+            courseid = VALUES(courseid),
+            sourceid = VALUES(sourceid),
+            question_type = VALUES(question_type),
+            question_title = VALUES(question_title),
+            options_json = VALUES(options_json),
+            correct_answer = VALUES(correct_answer),
+            student_answer = VALUES(student_answer),
+            wrong_count = VALUES(wrong_count),
+            last_wrong_time = VALUES(last_wrong_time)
+    </insert>
+
+    <select id="findByStudent" resultMap="WrongQuestionResultMap">
+        SELECT wq.*, c.coursename
+        FROM student_wrong_question wq
+        LEFT JOIN course c ON wq.courseid = c.courseid
+        WHERE wq.studentid = #{studentid}
+        <if test="courseid != null">AND wq.courseid = #{courseid}</if>
+        <if test="mastered != null">AND wq.mastered = #{mastered}</if>
+        ORDER BY wq.mastered ASC, wq.last_wrong_time DESC
+    </select>
+
+    <select id="countWrong" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM student_wrong_question WHERE studentid = #{studentid} AND mastered = 0
+    </select>
+
+    <select id="countMastered" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM student_wrong_question WHERE studentid = #{studentid} AND mastered = 1
+    </select>
+
+    <select id="findById" resultMap="WrongQuestionResultMap">
+        SELECT wq.*, c.coursename
+        FROM student_wrong_question wq
+        LEFT JOIN course c ON wq.courseid = c.courseid
+        WHERE wq.id = #{id}
+    </select>
+
+    <update id="updateMastered">
+        UPDATE student_wrong_question
+        SET mastered = #{mastered}
+        WHERE id = #{id} AND studentid = #{studentid}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM student_wrong_question WHERE id = #{id} AND studentid = #{studentid}
+    </delete>
+
+</mapper>

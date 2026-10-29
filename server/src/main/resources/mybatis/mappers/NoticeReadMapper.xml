@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.NoticeReadMapper">
+
+    <resultMap id="NoticeReadResultMap" type="com.model.NoticeRead">
+        <id property="id" column="id"/>
+        <result property="noticeid" column="noticeid"/>
+        <result property="homeworkid" column="homeworkid"/>
+        <result property="studentid" column="studentid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="readtime" column="readtime"/>
+        <result property="noticetitle" column="noticetitle"/>
+        <result property="homeworktitle" column="homeworktitle"/>
+        <result property="studentname" column="studentname"/>
+        <result property="teachername" column="teachername"/>
+    </resultMap>
+
+    <insert id="insertNoticeRead" parameterType="com.model.NoticeRead">
+        INSERT IGNORE INTO notice_read (noticeid, studentid, teacherid, readtime)
+        VALUES (#{noticeid}, #{studentid}, #{teacherid}, #{readtime})
+    </insert>
+
+    <insert id="insertHomeworkRead" parameterType="com.model.NoticeRead">
+        INSERT IGNORE INTO notice_read (homeworkid, studentid, readtime)
+        VALUES (#{homeworkid}, #{studentid}, #{readtime})
+    </insert>
+
+    <select id="findNoticeRead" resultMap="NoticeReadResultMap">
+        SELECT * FROM notice_read
+        WHERE noticeid = #{noticeid}
+        <if test="studentid != null">AND studentid = #{studentid}</if>
+        <if test="teacherid != null">AND teacherid = #{teacherid}</if>
+    </select>
+
+    <select id="findHomeworkRead" resultMap="NoticeReadResultMap">
+        SELECT * FROM notice_read
+        WHERE homeworkid = #{homeworkid} AND studentid = #{studentid}
+    </select>
+
+    <select id="countNoticeReadByStudents" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM notice_read WHERE noticeid = #{noticeid} AND studentid IS NOT NULL
+    </select>
+
+    <select id="countNoticeReadByTeachers" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM notice_read WHERE noticeid = #{noticeid} AND teacherid IS NOT NULL
+    </select>
+
+    <select id="countHomeworkRead" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM notice_read WHERE homeworkid = #{homeworkid} AND studentid IS NOT NULL
+    </select>
+
+    <select id="findUnreadStudents" resultType="com.model.NoticeRead">
+        SELECT s.studentid, s.studentname
+        FROM student s
+        <where>
+            <if test="classid != null">
+                s.classid = #{classid}
+            </if>
+            AND s.studentid NOT IN (
+                SELECT studentid FROM notice_read WHERE noticeid = #{noticeid} AND studentid IS NOT NULL
+            )
+        </where>
+    </select>
+
+    <select id="findUnreadHomeworkStudents" resultType="com.model.NoticeRead">
+        SELECT s.studentid, s.studentname
+        FROM student s
+        INNER JOIN homework h ON h.homeworkid = #{homeworkid}
+        INNER JOIN courseclass cc ON h.courseid = cc.courseid AND s.classid = cc.classid
+        <where>
+            <if test="classid != null">AND s.classid = #{classid}</if>
+            AND s.studentid NOT IN (
+                SELECT studentid FROM notice_read WHERE homeworkid = #{homeworkid} AND studentid IS NOT NULL
+            )
+        </where>
+    </select>
+
+    <!-- 获取作业所有学生的阅读状态 -->
+    <select id="findAllHomeworkReadStatus" resultType="java.util.Map">
+        SELECT s.studentid, s.studentname, ci.classname,
+               CASE WHEN nr.id IS NOT NULL THEN 1 ELSE 0 END as isRead,
+               nr.readtime
+        FROM student s
+        INNER JOIN homework h ON h.homeworkid = #{homeworkid}
+        INNER JOIN courseclass cc ON h.courseid = cc.courseid AND s.classid = cc.classid
+        INNER JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN notice_read nr ON nr.homeworkid = #{homeworkid} AND nr.studentid = s.studentid
+        <where>
+            <if test="classid != null">AND s.classid = #{classid}</if>
+        </where>
+        ORDER BY isRead ASC, s.studentno ASC
+    </select>
+
+    <!-- 统计作业关联的总学生数 -->
+    <select id="countHomeworkTotalStudents" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT s.studentid)
+        FROM student s
+        INNER JOIN homework h ON h.homeworkid = #{homeworkid}
+        INNER JOIN courseclass cc ON h.courseid = cc.courseid AND s.classid = cc.classid
+    </select>
+
+    <select id="listNoticeIdsByStudent" resultType="int">
+        SELECT noticeid FROM notice_read
+        WHERE studentid = #{studentid} AND noticeid IS NOT NULL
+    </select>
+
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.GamificationMapper">
+
+    <select id="getPoints" resultType="java.util.Map">
+        SELECT studentid, total_points AS totalPoints, level, continuous_days AS continuousDays,
+               last_checkin AS lastCheckin, update_time AS updateTime
+        FROM student_points
+        WHERE studentid = #{studentid}
+    </select>
+
+    <insert id="addPoints">
+        INSERT INTO student_points (studentid, total_points, level, continuous_days, update_time)
+        VALUES (#{studentid}, #{delta}, 1, 0, NOW())
+        ON DUPLICATE KEY UPDATE
+            total_points = total_points + #{delta},
+            update_time = NOW()
+    </insert>
+
+    <update id="updateLevel">
+        UPDATE student_points SET level = #{level} WHERE studentid = #{studentid}
+    </update>
+
+    <update id="updateCheckin">
+        UPDATE student_points
+        SET last_checkin = #{date}, continuous_days = #{continuousDays}, update_time = NOW()
+        WHERE studentid = #{studentid}
+    </update>
+
+    <insert id="insertLog">
+        INSERT INTO points_log (studentid, points, type, reason, create_time)
+        VALUES (#{studentid}, #{points}, #{type}, #{reason}, NOW())
+    </insert>
+
+    <select id="recentLogs" resultType="java.util.Map">
+        SELECT points, type, reason, create_time AS createTime
+        FROM points_log
+        WHERE studentid = #{studentid}
+        ORDER BY id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="listBadgeDefs" resultType="java.util.Map">
+        SELECT code, name, description, icon, condition_type AS conditionType, threshold
+        FROM badge_def
+        ORDER BY threshold ASC
+    </select>
+
+    <select id="listStudentBadges" resultType="java.util.Map">
+        SELECT badge_code AS badgeCode, obtain_time AS obtainTime
+        FROM student_badge
+        WHERE studentid = #{studentid}
+    </select>
+
+    <insert id="awardBadge">
+        INSERT IGNORE INTO student_badge (studentid, badge_code, obtain_time)
+        VALUES (#{studentid}, #{code}, NOW())
+    </insert>
+
+    <select id="countHomeworkSubmissions" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM studenthomework WHERE studentid = #{studentid} AND status IN (1, 2)
+    </select>
+
+    <select id="leaderboard" resultType="java.util.Map">
+        SELECT s.studentid AS studentid, s.studentname AS studentname, s.studentno AS studentno,
+               ci.classname AS classname,
+               IFNULL(sp.total_points, 0) AS totalPoints,
+               IFNULL(sp.level, 1) AS level,
+               IFNULL(sp.continuous_days, 0) AS continuousDays
+        FROM student s
+        LEFT JOIN student_points sp ON sp.studentid = s.studentid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        <where>
+            <if test="classid != null">AND s.classid = #{classid}</if>
+        </where>
+        ORDER BY totalPoints DESC, continuousDays DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="rankOf" resultType="java.lang.Long">
+        SELECT COUNT(*) + 1
+        FROM student_points
+        WHERE total_points > (SELECT IFNULL(total_points, 0) FROM student_points WHERE studentid = #{studentid})
+    </select>
+
+</mapper>

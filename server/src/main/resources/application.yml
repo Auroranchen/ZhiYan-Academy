@@ -1,0 +1,309 @@
+# =============================================
+# 智慧作业收集系统 - 统一配置文件
+# =============================================
+# 启动方式：
+#   本地开发：        mvn spring-boot:run
+#   本地开发+Redis：  mvn spring-boot:run "-Dspring-boot.run.profiles=dev,redis"
+#   服务器部署：      java -jar xxx.jar --spring.profiles.active=prod
+#   服务器部署+Redis：java -jar xxx.jar --spring.profiles.active=prod,redis
+# =============================================
+
+# ========== 通用配置（所有环境共享） ==========
+spring:
+  config:
+    # 本地密钥文件（不纳入版本控制）；也可继续使用环境变量覆盖。
+    import: optional:file:./config/application-secrets.yml
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=120s
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+  # 邮件通知（QQ 邮箱 SMTP）。password 必须填 QQ 邮箱的「SMTP 授权码」，不是 QQ 密码！
+  # 获取方式：QQ邮箱网页版 → 设置 → 账号 → 开启 POP3/SMTP 服务 → 生成授权码
+  # 生产部署请通过环境变量 MAIL_USERNAME / MAIL_PASSWORD 覆盖，勿将授权码提交到公开仓库
+  mail:
+    host: ${MAIL_HOST:smtp.qq.com}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 8000
+          writetimeout: 8000
+
+server:
+  port: 8083
+  forward-headers-strategy: framework
+  shutdown: graceful
+  servlet:
+    context-path: /ZhiYanAcademy
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: false
+        same-site: lax
+
+spring.lifecycle.timeout-per-shutdown-phase: 30s
+
+file:
+  server:
+    dir: ./upload/
+    path: /upload/
+
+# 微信小程序密钥必须由环境变量或 config/application-secrets.yml 注入。
+wechat:
+  mini-program:
+    app-id: ${WECHAT_MINI_APP_ID:}
+    app-secret: ${WECHAT_MINI_APP_SECRET:}
+    code2-session-url: ${WECHAT_CODE2SESSION_URL:https://api.weixin.qq.com/sns/jscode2session}
+    # 本机/服务器必须经过 HTTP 代理才能访问微信 API 时再配置；留空表示直连。
+    proxy-host: ${WECHAT_PROXY_HOST:}
+    proxy-port: ${WECHAT_PROXY_PORT:0}
+
+mybatis:
+  mapper-locations: classpath:/mybatis/mappers/*.xml
+  type-aliases-package: com.model
+  configuration:
+    map-underscore-to-camel-case: false
+
+# AI 密钥统一支持环境变量覆盖（AI_API_KEY、XFYUN_API_KEY 等）。
+# 密钥不提供仓库默认值；本地和生产均通过环境变量注入。
+ai:
+  zhipu:
+    # DeepSeek（OpenAI 兼容接口）
+    api-url: ${AI_API_URL:https://api.deepseek.com/chat/completions}
+    api-key: ${AI_API_KEY:}
+    model: ${AI_MODEL:deepseek-chat}
+  # 讯飞开放平台 - 语音听写（流式 WebSocket）
+  xfyun:
+    app-id: ${XFYUN_APP_ID:}
+    api-key: ${XFYUN_API_KEY:}
+    api-secret: ${XFYUN_API_SECRET:}
+    host: iat-api.xfyun.cn
+    path: /v2/iat
+  # 讯飞开放平台 - 在线语音合成（流式 WebSocket）
+  xfyun-tts:
+    app-id: ${XFYUN_TTS_APP_ID:}
+    api-key: ${XFYUN_TTS_API_KEY:}
+    api-secret: ${XFYUN_TTS_API_SECRET:}
+    host: tts-api.xfyun.cn
+    path: /v2/tts
+
+management:
+  health:
+    # 未配置邮箱时不主动连接 SMTP，避免健康检查反复打印 AuthenticationFailedException。
+    # 需要监控邮件连接时设置 MAIL_HEALTH_ENABLED=true，并同时配置 MAIL_USERNAME/MAIL_PASSWORD。
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches
+  endpoint:
+    health:
+      show-details: when_authorized
+
+app:
+  ai-routing:
+    rules:
+      - prefix: "agent."
+        model: ${AI_PIPELINE_MODEL:deepseek-flash}
+  # 多智能体流水线的并行调度。默认值来自实测（见 docs/superpowers/specs 的提速设计）。
+  agent-pipeline:
+    # 内容段最多分几波。压得越平越快，代价是深度超过本值的交接不再等待上游（injected:false）
+    max-waves: ${AGENT_PIPELINE_MAX_WAVES:2}
+    worker-threads: ${AGENT_PIPELINE_WORKER_THREADS:8}
+    orchestrator-threads: ${AGENT_PIPELINE_ORCHESTRATOR_THREADS:4}
+    max-concurrent-ai-calls: ${AGENT_PIPELINE_MAX_CONCURRENT_AI_CALLS:8}
+    # 超过该时长仍 running 的运行会被看门狗判为卡死并标记 error
+    stale-timeout-ms: ${AGENT_PIPELINE_STALE_TIMEOUT_MS:600000}
+    watchdog-interval-ms: ${AGENT_PIPELINE_WATCHDOG_INTERVAL_MS:60000}
+  # AI 对话成本与并发保护：限制拼接后的提示词长度，并约束单用户同时生成数量。
+  ai-chat:
+    max-system-chars: ${AI_CHAT_MAX_SYSTEM_CHARS:16000}
+    max-message-chars: ${AI_CHAT_MAX_MESSAGE_CHARS:24000}
+    max-concurrent-per-user: ${AI_CHAT_MAX_CONCURRENT_PER_USER:2}
+  ai-rate-limit:
+    requests-per-minute: ${AI_REQUESTS_PER_MINUTE:60}
+  ai-retry:
+    max-retries: ${AI_MAX_RETRIES:2}
+    base-delay-ms: ${AI_RETRY_BASE_DELAY_MS:1000}
+    max-delay-ms: ${AI_RETRY_MAX_DELAY_MS:10000}
+  sql:
+    slow-threshold-ms: 300
+  # 课程资料检索。这些默认值就是重构前的硬编码取值，是全部消融实验的基线；
+  # 改动它们要同步更新 plan 里的对照表（否则历史结果不可比）。
+  rag:
+    weight-semantic: ${RAG_WEIGHT_SEMANTIC:0.55}
+    weight-coverage: ${RAG_WEIGHT_COVERAGE:0.30}
+    weight-title: ${RAG_WEIGHT_TITLE:0.10}
+    weight-exact: ${RAG_WEIGHT_EXACT:0.05}
+    top-k: ${RAG_TOP_K:5}
+    max-chunks-per-resource: ${RAG_MAX_CHUNKS_PER_RESOURCE:2}
+    min-relevance-score: ${RAG_MIN_RELEVANCE_SCORE:0.08}
+    embedding:
+      # local = 本地哈希向量器（零依赖、无需 Key，语义能力弱）
+      # zhipu = 智谱 embedding-3（语义真实，需要 Key）
+      # 缺 Key 时自动回落到 local 并打 warn，不会导致启动失败。
+      provider: ${RAG_EMBED_PROVIDER:local}
+      api-url: ${ZHIPU_EMBED_URL:https://open.bigmodel.cn/api/paas/v4/embeddings}
+      api-key: ${ZHIPU_API_KEY:}
+      model: ${ZHIPU_EMBED_MODEL:embedding-3}
+      # Matryoshka 可选 256/512/1024/2048。取 1024 而非官方默认 2048 是成本决策：
+      # 每次检索都要反序列化全部候选向量，维度直接放大这个开销。
+      dim: ${ZHIPU_EMBED_DIM:1024}
+      batch-size: ${ZHIPU_EMBED_BATCH_SIZE:64}
+      proxy-host: ${ZHIPU_PROXY_HOST:}
+      proxy-port: ${ZHIPU_PROXY_PORT:0}
+  # 业务邮件提醒：有人提交高校入驻申请时发送通知邮件
+  notify:
+    mail:
+      enabled: ${MAIL_NOTIFY_ENABLED:false}
+      to: ${MAIL_NOTIFY_TO:}
+  actuator:
+    token: ${ACTUATOR_TOKEN:}
+  # 登录安全（失败锁定 + IP 限流），状态存 Redis（未启用 redis 时降级内存）
+  security:
+    web:
+      allowed-origins: ${WEB_ALLOWED_ORIGINS:http://localhost:8080,http://127.0.0.1:8080}
+    public-endpoints:
+      upload-requests-per-hour: ${PUBLIC_UPLOAD_REQUESTS_PER_HOUR:10}
+      apply-requests-per-hour: ${PUBLIC_APPLY_REQUESTS_PER_HOUR:5}
+    login:
+      max-fail: 5            # 连续失败多少次后锁定账号
+      lock-minutes: 15       # 锁定时长（分钟）
+      fail-window-minutes: 15 # 失败计数统计窗口（分钟）
+      ip-rate-per-minute: 20  # 单 IP 每分钟最多登录请求次数
+
+---
+# ========== 本地开发环境（dev） ==========
+# 连接开发者本机的 MySQL；密码不进入共享配置，启动前通过 DB_PASSWORD 注入。
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/zhzyai?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    # 可通过 IntelliJ 运行配置、系统环境变量或本地 secrets 文件注入。
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB
+      max-request-size: 50MB
+
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  level:
+    com.mapper: debug
+
+---
+# ========== 服务器部署环境（prod） ==========
+# 连接服务器上的 MySQL。所有连接信息均可通过环境变量覆盖，
+# 部署时无需改动本文件，直接在服务器上设置环境变量即可：
+#   DB_HOST、DB_PORT、DB_NAME、DB_USERNAME、DB_PASSWORD
+# 主机/库名/账号有本机默认值；生产密码必须通过 DB_PASSWORD 设置。
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:ZYA}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:zya}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: ${SESSION_COOKIE_SECURE:true}
+
+logging:
+  level:
+    com.mapper: warn
+
+---
+# ========== Redis 可选叠加（redis） ==========
+# 在 dev 或 prod 基础上额外加 ,redis 即可启用
+spring:
+  config:
+    activate:
+      on-profile: redis
+
+  autoconfigure:
+    exclude: []
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 120000
+      cache-null-values: false
+
+  session:
+    timeout: 1800s
+    redis:
+      namespace: zya:session

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.HomeworkMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="HomeworkResultMap" type="com.model.Homework">
+        <id property="homeworkid" column="homeworkid"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="courseid" column="courseid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="type" column="type"/>
+        <result property="deadline" column="deadline"/>
+        <result property="createtime" column="createtime"/>
+        <result property="coursename" column="coursename"/>
+        <result property="teachername" column="teachername"/>
+        <result property="semester" column="semester"/>
+        <result property="submitCount" column="submitcount"/>
+        <result property="totalCount" column="totalcount"/>
+        <result property="classNamesStr" column="classNamesStr"/>
+        <result property="attachment" column="attachment"/>
+    </resultMap>
+
+    <!-- 查询作业列表（分页、搜索） -->
+    <select id="findList" resultMap="HomeworkResultMap">
+        SELECT h.homeworkid, h.title, h.content, h.courseid, h.teacherid, h.type, h.deadline, h.createtime, h.attachment,
+               c.coursename, c.semester, t.teachername,
+               (SELECT COUNT(*) FROM studenthomework sh WHERE sh.homeworkid = h.homeworkid AND sh.status > 0) as submitcount
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND h.title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY h.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询作业总数（带搜索条件） -->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM homework
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND title LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据ID查询作业 -->
+    <select id="findById" resultMap="HomeworkResultMap">
+        SELECT h.homeworkid, h.title, h.content, h.courseid, h.teacherid, h.type, h.deadline, h.createtime, h.attachment,
+               c.coursename, c.semester, t.teachername
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        WHERE h.homeworkid = #{homeworkid}
+    </select>
+
+    <!-- 根据课程ID查询作业 -->
+    <select id="findByCourseid" resultMap="HomeworkResultMap">
+        SELECT h.homeworkid, h.title, h.content, h.courseid, h.teacherid, h.type, h.deadline, h.createtime, h.attachment,
+               c.coursename, c.semester, t.teachername
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        WHERE h.courseid = #{courseid}
+        ORDER BY h.createtime DESC
+    </select>
+
+    <!-- 根据教师ID查询作业 -->
+    <select id="findByTeacherid" resultMap="HomeworkResultMap">
+        SELECT h.homeworkid, h.title, h.content, h.courseid, h.teacherid, h.type, h.deadline, h.createtime, h.attachment,
+               c.coursename, c.semester, t.teachername,
+               (SELECT COUNT(*) FROM studenthomework sh WHERE sh.homeworkid = h.homeworkid AND sh.status > 0) as submitcount,
+               (SELECT GROUP_CONCAT(ci.classname SEPARATOR ',')
+                FROM courseclass cc 
+                LEFT JOIN classinfo ci ON cc.classid = ci.classid 
+                WHERE cc.courseid = h.courseid) as classNamesStr
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        <if test="classid != null">
+          INNER JOIN courseclass cc ON h.courseid = cc.courseid AND cc.classid = #{classid}
+        </if>
+        WHERE h.teacherid = #{teacherid}
+        <if test="keyword != null and keyword != ''">
+            AND h.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="semester != null and semester != ''">
+            <choose>
+                <when test='semester.matches("^\\d{4}-\\d{4}$")'>
+                    AND (c.semester = #{semester} OR c.semester LIKE CONCAT(#{semester}, '-%'))
+                </when>
+                <otherwise>
+                    AND c.semester = #{semester}
+                </otherwise>
+            </choose>
+        </if>
+        ORDER BY h.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据教师ID查询作业总数 -->
+    <select id="countByTeacherid" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        <if test="classid != null">
+          INNER JOIN courseclass cc ON h.courseid = cc.courseid AND cc.classid = #{classid}
+        </if>
+        WHERE h.teacherid = #{teacherid}
+        <if test="keyword != null and keyword != ''">
+            AND h.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="semester != null and semester != ''">
+            <choose>
+                <when test='semester.matches("^\\d{4}-\\d{4}$")'>
+                    AND (c.semester = #{semester} OR c.semester LIKE CONCAT(#{semester}, '-%'))
+                </when>
+                <otherwise>
+                    AND c.semester = #{semester}
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <!-- 根据学生班级查询作业 -->
+    <select id="findByClassid" resultMap="HomeworkResultMap">
+        SELECT DISTINCT h.homeworkid, h.title, h.content, h.courseid, h.teacherid, h.type, h.deadline, h.createtime, h.attachment,
+               c.coursename, c.semester, t.teachername
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        INNER JOIN courseclass cc ON h.courseid = cc.courseid
+        WHERE cc.classid = #{classid}
+        <if test="semester != null and semester != ''">
+            <choose>
+                <when test='semester.matches("^\\d{4}-\\d{4}$")'>
+                    AND (c.semester = #{semester} OR c.semester LIKE CONCAT(#{semester}, '-%'))
+                </when>
+                <otherwise>
+                    AND c.semester = #{semester}
+                </otherwise>
+            </choose>
+        </if>
+        ORDER BY h.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据学生班级查询作业总数 -->
+    <select id="countByClassid" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT h.homeworkid)
+        FROM homework h
+        LEFT JOIN course c ON h.courseid = c.courseid
+        INNER JOIN courseclass cc ON h.courseid = cc.courseid
+        WHERE cc.classid = #{classid}
+        <if test="semester != null and semester != ''">
+            <choose>
+                <when test='semester.matches("^\\d{4}-\\d{4}$")'>
+                    AND (c.semester = #{semester} OR c.semester LIKE CONCAT(#{semester}, '-%'))
+                </when>
+                <otherwise>
+                    AND c.semester = #{semester}
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <!-- 添加作业 -->
+    <insert id="insert" parameterType="com.model.Homework" useGeneratedKeys="true" keyProperty="homeworkid">
+        INSERT INTO homework (title, content, courseid, teacherid, type, deadline, createtime, attachment)
+        VALUES (#{title}, #{content}, #{courseid}, #{teacherid}, #{type}, #{deadline}, #{createtime}, #{attachment})
+    </insert>
+
+    <!-- 更新作业 -->
+    <update id="update" parameterType="com.model.Homework">
+        UPDATE homework
+        SET title = #{title}, content = #{content}, courseid = #{courseid}, type = #{type}, deadline = #{deadline}, attachment = #{attachment}
+        WHERE homeworkid = #{homeworkid}
+    </update>
+
+    <!-- 删除作业 -->
+    <delete id="delete">
+        DELETE FROM homework WHERE homeworkid = #{homeworkid}
+    </delete>
+
+</mapper>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.StudentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="StudentResultMap" type="com.model.Student">
+        <id property="studentid" column="studentid"/>
+        <result property="studentno" column="studentno"/>
+        <result property="studentname" column="studentname"/>
+        <result property="password" column="password"/>
+        <result property="sex" column="sex"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="address" column="address"/>
+        <result property="classid" column="classid"/>
+        <result property="majorid" column="majorid"/>
+        <result property="createtime" column="createtime"/>
+        <result property="classname" column="classname"/>
+        <result property="majorname" column="majorname"/>
+        <result property="avatar" column="avatar"/>
+    </resultMap>
+
+    <!-- 查询学生列表（分页、搜索） -->
+    <select id="findList" resultMap="StudentResultMap">
+        SELECT s.studentid, s.studentno, s.studentname, s.sex, s.phone, s.email, s.address,
+               s.classid, s.majorid, s.createtime, s.avatar, c.classname, m.majorname
+        FROM student s
+        LEFT JOIN classinfo c ON s.classid = c.classid
+        LEFT JOIN major m ON s.majorid = m.majorid
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.studentno LIKE CONCAT('%', #{keyword}, '%') OR s.studentname LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="classid != null">
+                AND s.classid = #{classid}
+            </if>
+            <if test="majorid != null">
+                AND s.majorid = #{majorid}
+            </if>
+        </where>
+        ORDER BY s.studentid
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询学生总数（带搜索条件） -->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM student s
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.studentno LIKE CONCAT('%', #{keyword}, '%') OR s.studentname LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="classid != null">
+                AND s.classid = #{classid}
+            </if>
+            <if test="majorid != null">
+                AND s.majorid = #{majorid}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据班级ID统计学生数量 -->
+    <select id="countByClassid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM student WHERE classid = #{classid}
+    </select>
+
+    <!-- 根据ID查询学生 -->
+    <select id="findById" resultMap="StudentResultMap">
+        SELECT s.studentid, s.studentno, s.studentname, s.sex, s.phone, s.email, s.address,
+               s.classid, s.majorid, s.createtime, s.avatar, c.classname, m.majorname
+        FROM student s
+        LEFT JOIN classinfo c ON s.classid = c.classid
+        LEFT JOIN major m ON s.majorid = m.majorid
+        WHERE s.studentid = #{studentid}
+    </select>
+
+    <select id="findCredentialById" resultMap="StudentResultMap">
+        SELECT s.studentid, s.studentno, s.studentname, s.password, s.sex, s.phone, s.email, s.address,
+               s.classid, s.majorid, s.createtime, s.avatar, c.classname, m.majorname
+        FROM student s
+        LEFT JOIN classinfo c ON s.classid = c.classid
+        LEFT JOIN major m ON s.majorid = m.majorid
+        WHERE s.studentid = #{studentid}
+    </select>
+
+    <!-- 根据学号查询学生 -->
+    <select id="findByStudentno" resultMap="StudentResultMap">
+        SELECT studentid, studentno, studentname, password, sex, phone, email, address, classid, majorid, createtime, avatar
+        FROM student
+        WHERE studentno = #{studentno}
+    </select>
+
+    <!-- 添加学生 -->
+    <insert id="insert" parameterType="com.model.Student" useGeneratedKeys="true" keyProperty="studentid">
+        INSERT INTO student (studentno, studentname, password, sex, phone, email, address, classid, majorid, createtime, avatar)
+        VALUES (#{studentno}, #{studentname}, #{password}, #{sex}, #{phone}, #{email}, #{address}, #{classid}, #{majorid}, #{createtime}, #{avatar})
+    </insert>
+
+    <!-- 更新学生 -->
+    <update id="update" parameterType="com.model.Student">
+        UPDATE student
+        SET studentno = #{studentno}, studentname = #{studentname}, password = #{password}, sex = #{sex},
+            phone = #{phone}, email = #{email}, address = #{address}, classid = #{classid}, majorid = #{majorid}, avatar = #{avatar}
+        WHERE studentid = #{studentid}
+    </update>
+
+    <!-- 删除学生 -->
+    <delete id="delete">
+        DELETE FROM student WHERE studentid = #{studentid}
+    </delete>
+
+    <!-- 更新学生密码 -->
+    <update id="updatePassword">
+        UPDATE student SET password = #{password} WHERE studentid = #{studentid}
+    </update>
+
+    <!-- 根据班级ID查询学生列表 -->
+    <select id="findByClassid" resultMap="StudentResultMap">
+        SELECT studentid, studentno, studentname, classid, avatar
+        FROM student
+        WHERE classid = #{classid}
+        ORDER BY studentno
+    </select>
+
+    <!-- 更新学生头像 -->
+    <update id="updateAvatar">
+        UPDATE student SET avatar = #{avatar} WHERE studentid = #{id}
+    </update>
+
+</mapper>

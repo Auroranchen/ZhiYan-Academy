@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.AdminMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AdminResultMap" type="com.model.Admin">
+        <id property="adminid" column="adminid"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="realname" column="realname"/>
+        <result property="avatar" column="avatar"/>
+    </resultMap>
+
+    <!-- 根据ID查询管理员 -->
+    <select id="findById" resultMap="AdminResultMap">
+        SELECT adminid, username, realname, avatar
+        FROM admin
+        WHERE adminid = #{adminid}
+    </select>
+
+    <select id="findCredentialById" resultMap="AdminResultMap">
+        SELECT adminid, username, password, realname, avatar
+        FROM admin
+        WHERE adminid = #{adminid}
+    </select>
+
+    <!-- 根据用户名查询管理员 -->
+    <select id="findByUsername" resultMap="AdminResultMap">
+        SELECT adminid, username, password, realname, avatar
+        FROM admin
+        WHERE username = #{username}
+    </select>
+
+    <!-- 更新管理员密码 -->
+    <update id="updatePassword">
+        UPDATE admin SET password = #{password} WHERE adminid = #{adminid}
+    </update>
+
+    <!-- 更新管理员头像 -->
+    <update id="updateAvatar">
+        UPDATE admin SET avatar = #{avatar} WHERE adminid = #{id}
+    </update>
+
+</mapper>

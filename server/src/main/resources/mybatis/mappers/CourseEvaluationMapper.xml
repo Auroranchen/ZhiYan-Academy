@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.CourseEvaluationMapper">
+
+    <resultMap id="CourseEvaluationResultMap" type="com.model.CourseEvaluation">
+        <id property="id" column="id"/>
+        <result property="courseid" column="courseid"/>
+        <result property="studentid" column="studentid"/>
+        <result property="teachingscore" column="teachingscore"/>
+        <result property="contentscore" column="contentscore"/>
+        <result property="difficultyscore" column="difficultyscore"/>
+        <result property="overallscore" column="overallscore"/>
+        <result property="comment" column="comment"/>
+        <result property="anonymous" column="anonymous"/>
+        <result property="createtime" column="createtime"/>
+        <result property="coursename" column="coursename"/>
+        <result property="studentname" column="studentname"/>
+        <result property="teachername" column="teachername"/>
+    </resultMap>
+
+    <select id="findByCourseid" resultMap="CourseEvaluationResultMap">
+        SELECT ce.*, c.coursename, 
+               CASE WHEN ce.anonymous = 1 THEN '匿名' ELSE s.studentname END as studentname,
+               t.teachername
+        FROM course_evaluation ce
+        LEFT JOIN course c ON ce.courseid = c.courseid
+        LEFT JOIN student s ON ce.studentid = s.studentid
+        LEFT JOIN teacher t ON c.teacherid = t.teacherid
+        WHERE ce.courseid = #{courseid}
+        ORDER BY ce.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByCourseid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM course_evaluation WHERE courseid = #{courseid}
+    </select>
+
+    <select id="findById" resultMap="CourseEvaluationResultMap">
+        SELECT ce.*, c.coursename, s.studentname, t.teachername
+        FROM course_evaluation ce
+        LEFT JOIN course c ON ce.courseid = c.courseid
+        LEFT JOIN student s ON ce.studentid = s.studentid
+        LEFT JOIN teacher t ON c.teacherid = t.teacherid
+        WHERE ce.id = #{id}
+    </select>
+
+    <select id="findByStudentAndCourse" resultMap="CourseEvaluationResultMap">
+        SELECT * FROM course_evaluation
+        WHERE studentid = #{studentid} AND courseid = #{courseid}
+    </select>
+
+    <select id="findByStudentid" resultMap="CourseEvaluationResultMap">
+        SELECT ce.*, c.coursename, t.teachername
+        FROM course_evaluation ce
+        LEFT JOIN course c ON ce.courseid = c.courseid
+        LEFT JOIN teacher t ON c.teacherid = t.teacherid
+        WHERE ce.studentid = #{studentid}
+        ORDER BY ce.createtime DESC
+    </select>
+
+    <insert id="insert" parameterType="com.model.CourseEvaluation" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course_evaluation (courseid, studentid, teachingscore, contentscore, difficultyscore, overallscore, comment, anonymous, createtime)
+        VALUES (#{courseid}, #{studentid}, #{teachingscore}, #{contentscore}, #{difficultyscore}, #{overallscore}, #{comment}, #{anonymous}, #{createtime})
+    </insert>
+
+    <update id="update" parameterType="com.model.CourseEvaluation">
+        UPDATE course_evaluation
+        SET teachingscore = #{teachingscore}, contentscore = #{contentscore}, difficultyscore = #{difficultyscore},
+            overallscore = #{overallscore}, comment = #{comment}, anonymous = #{anonymous}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM course_evaluation WHERE id = #{id}
+    </delete>
+
+    <select id="getAverageScores" resultType="java.util.Map">
+        SELECT 
+            AVG(teachingscore) as avgTeaching,
+            AVG(contentscore) as avgContent,
+            AVG(difficultyscore) as avgDifficulty,
+            AVG(overallscore) as avgOverall,
+            COUNT(*) as totalCount
+        FROM course_evaluation
+        WHERE courseid = #{courseid}
+    </select>
+
+</mapper>

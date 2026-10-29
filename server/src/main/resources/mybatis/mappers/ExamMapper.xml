@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.ExamMapper">
+
+    <resultMap id="ExamResultMap" type="com.model.Exam">
+        <id property="examid" column="examid"/>
+        <result property="title" column="title"/>
+        <result property="courseid" column="courseid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="description" column="description"/>
+        <result property="content" column="content"/>
+        <result property="duration" column="duration"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="starttime" column="starttime"/>
+        <result property="endtime" column="endtime"/>
+        <result property="status" column="status"/>
+        <result property="antiCheat" column="anti_cheat"/>
+        <result property="createtime" column="createtime"/>
+        <result property="coursename" column="coursename"/>
+        <result property="teachername" column="teachername"/>
+        <result property="recordStatus" column="record_status"/>
+        <result property="submittedCount" column="submitted_count"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.model.Exam" useGeneratedKeys="true" keyProperty="examid">
+        INSERT INTO exam (title, courseid, teacherid, description, content, duration, total_score,
+                          starttime, endtime, status, anti_cheat, createtime)
+        VALUES (#{title}, #{courseid}, #{teacherid}, #{description}, #{content}, #{duration}, #{totalScore},
+                #{starttime}, #{endtime}, #{status}, #{antiCheat}, NOW())
+    </insert>
+
+    <update id="update" parameterType="com.model.Exam">
+        UPDATE exam
+        SET title = #{title}, courseid = #{courseid}, description = #{description}, content = #{content},
+            duration = #{duration}, total_score = #{totalScore}, starttime = #{starttime},
+            endtime = #{endtime}, status = #{status}, anti_cheat = #{antiCheat}
+        WHERE examid = #{examid}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM exam WHERE examid = #{examid}
+    </delete>
+
+    <select id="findById" resultMap="ExamResultMap">
+        SELECT e.*, c.coursename, t.teachername
+        FROM exam e
+        LEFT JOIN course c ON e.courseid = c.courseid
+        LEFT JOIN teacher t ON e.teacherid = t.teacherid
+        WHERE e.examid = #{examid}
+    </select>
+
+    <select id="findByTeacher" resultMap="ExamResultMap">
+        SELECT e.*, c.coursename,
+               (SELECT COUNT(*) FROM exam_record er WHERE er.examid = e.examid AND er.status >= 1) AS submitted_count
+        FROM exam e
+        LEFT JOIN course c ON e.courseid = c.courseid
+        WHERE e.teacherid = #{teacherid}
+        <if test="keyword != null and keyword != ''">
+            AND (e.title LIKE CONCAT('%', #{keyword}, '%') OR c.coursename LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY e.examid DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByTeacher" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM exam e
+        LEFT JOIN course c ON e.courseid = c.courseid
+        WHERE e.teacherid = #{teacherid}
+        <if test="keyword != null and keyword != ''">
+            AND (e.title LIKE CONCAT('%', #{keyword}, '%') OR c.coursename LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <select id="findAvailableForStudent" resultMap="ExamResultMap">
+        SELECT e.*, c.coursename, t.teachername,
+               er.status AS record_status
+        FROM exam e
+        JOIN course c ON e.courseid = c.courseid
+        LEFT JOIN teacher t ON e.teacherid = t.teacherid
+        JOIN courseclass cc ON cc.courseid = e.courseid
+        JOIN student s ON s.classid = cc.classid
+        LEFT JOIN exam_record er ON er.examid = e.examid AND er.studentid = s.studentid
+        WHERE s.studentid = #{studentid}
+          AND e.status = 1
+        ORDER BY e.examid DESC
+    </select>
+
+    <select id="countSubmitted" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM exam_record WHERE examid = #{examid} AND status >= 1
+    </select>
+
+    <update id="updateStatus">
+        UPDATE exam SET status = #{status} WHERE examid = #{examid}
+    </update>
+
+    <select id="findUnsubmittedStudents" resultType="java.util.Map">
+        SELECT s.studentid, s.studentno, s.studentname, ci.classname
+        FROM student s
+        JOIN courseclass cc ON s.classid = cc.classid
+        JOIN exam e ON cc.courseid = e.courseid
+        JOIN classinfo ci ON s.classid = ci.classid
+        WHERE e.examid = #{examid}
+          AND s.studentid NOT IN (
+              SELECT er.studentid FROM exam_record er WHERE er.examid = #{examid}
+          )
+        ORDER BY ci.classname, s.studentno
+    </select>
+
+</mapper>

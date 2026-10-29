@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.LearningPlanMapper">
+
+    <resultMap id="PlanResultMap" type="com.model.LearningPlan">
+        <id property="id" column="id"/>
+        <result property="studentid" column="studentid"/>
+        <result property="courseid" column="courseid"/>
+        <result property="title" column="title"/>
+        <result property="summary" column="summary"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="progressJson" column="progress_json"/>
+        <result property="createTime" column="create_time"/>
+        <result property="coursename" column="coursename"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.model.LearningPlan" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO learning_plan (studentid, courseid, title, summary, content, status, create_time)
+        VALUES (#{studentid}, #{courseid}, #{title}, #{summary}, #{content}, #{status}, NOW())
+    </insert>
+
+    <select id="findByStudent" resultMap="PlanResultMap">
+        SELECT lp.*, c.coursename
+        FROM learning_plan lp
+        LEFT JOIN course c ON lp.courseid = c.courseid
+        WHERE lp.studentid = #{studentid}
+        ORDER BY lp.id DESC
+    </select>
+
+    <select id="findById" resultMap="PlanResultMap">
+        SELECT lp.*, c.coursename
+        FROM learning_plan lp
+        LEFT JOIN course c ON lp.courseid = c.courseid
+        WHERE lp.id = #{id}
+    </select>
+
+    <select id="findByIdForStudent" resultMap="PlanResultMap">
+        SELECT lp.*, c.coursename
+        FROM learning_plan lp
+        LEFT JOIN course c ON lp.courseid = c.courseid
+        WHERE lp.id = #{id} AND lp.studentid = #{studentid}
+    </select>
+
+    <update id="archive">
+        UPDATE learning_plan SET status = 0 WHERE id = #{id} AND studentid = #{studentid}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM learning_plan WHERE id = #{id} AND studentid = #{studentid}
+    </delete>
+
+    <update id="updateProgress">
+        UPDATE learning_plan SET progress_json = #{progressJson}
+        WHERE id = #{id} AND studentid = #{studentid}
+    </update>
+
+</mapper>

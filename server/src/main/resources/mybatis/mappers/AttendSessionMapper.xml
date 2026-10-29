@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.AttendSessionMapper">
+
+    <resultMap id="SessionMap" type="com.model.AttendSession">
+        <id property="id" column="id"/>
+        <result property="courseid" column="courseid"/>
+        <result property="classid" column="classid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="checkinCode" column="checkin_code"/>
+        <result property="title" column="title"/>
+        <result property="type" column="type"/>
+        <result property="lateMinutes" column="late_minutes"/>
+        <result property="duration" column="duration"/>
+        <result property="status" column="status"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="coursename" column="coursename"/>
+        <result property="classname" column="classname"/>
+        <result property="teachername" column="teachername"/>
+        <result property="totalStudents" column="total_students"/>
+        <result property="checkedCount" column="checked_count"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.model.AttendSession" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO attend_session (courseid, classid, teacherid, checkin_code, title, type, late_minutes, duration, status, start_time, end_time, create_time)
+        VALUES (#{courseid}, #{classid}, #{teacherid}, #{checkinCode}, #{title}, #{type}, #{lateMinutes}, #{duration}, #{status}, #{startTime}, #{endTime}, #{createTime})
+    </insert>
+
+    <select id="findById" resultMap="SessionMap">
+        SELECT s.*,
+               c.coursename, ci.classname, t.teachername,
+               (SELECT COUNT(*) FROM student st WHERE st.classid = s.classid) AS total_students,
+               (SELECT COUNT(*) FROM student_attendance sa WHERE sa.session_id = s.id AND sa.status != 4) AS checked_count
+        FROM attend_session s
+        LEFT JOIN course c ON s.courseid = c.courseid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN teacher t ON s.teacherid = t.teacherid
+        WHERE s.id = #{id}
+    </select>
+
+    <select id="findByCode" resultMap="SessionMap">
+        SELECT s.*,
+               c.coursename, ci.classname, t.teachername
+        FROM attend_session s
+        LEFT JOIN course c ON s.courseid = c.courseid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN teacher t ON s.teacherid = t.teacherid
+        WHERE s.checkin_code = #{checkinCode}
+        <if test="status != null">AND s.status = #{status}</if>
+        ORDER BY s.start_time DESC LIMIT 1
+    </select>
+
+    <select id="findByTeacher" resultMap="SessionMap">
+        SELECT s.*,
+               c.coursename, ci.classname,
+               (SELECT COUNT(*) FROM student st WHERE st.classid = s.classid) AS total_students,
+               (SELECT COUNT(*) FROM student_attendance sa WHERE sa.session_id = s.id AND sa.status != 4) AS checked_count
+        FROM attend_session s
+        LEFT JOIN course c ON s.courseid = c.courseid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        WHERE s.teacherid = #{teacherid}
+        ORDER BY s.start_time DESC
+    </select>
+
+    <select id="findActiveByCodeAndClass" resultMap="SessionMap">
+        SELECT s.*,
+               c.coursename, ci.classname, t.teachername
+        FROM attend_session s
+        LEFT JOIN course c ON s.courseid = c.courseid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN teacher t ON s.teacherid = t.teacherid
+        WHERE s.checkin_code = #{checkinCode} AND s.classid = #{classid}
+              AND s.status = 1 AND s.end_time > NOW()
+        ORDER BY s.start_time DESC LIMIT 1
+    </select>
+
+    <select id="findActiveByClass" resultMap="SessionMap">
+        SELECT s.*,
+               c.coursename, ci.classname, t.teachername
+        FROM attend_session s
+        LEFT JOIN course c ON s.courseid = c.courseid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN teacher t ON s.teacherid = t.teacherid
+        WHERE s.classid = #{classid} AND s.status = 1 AND s.end_time > NOW()
+        ORDER BY s.start_time DESC
+    </select>
+
+    <update id="updateStatus">
+        UPDATE attend_session SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <update id="closeExpired">
+        UPDATE attend_session SET status = 2 WHERE status = 1 AND end_time &lt;= NOW()
+    </update>
+
+</mapper>

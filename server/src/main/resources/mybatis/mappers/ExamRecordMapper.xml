@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.ExamRecordMapper">
+
+    <resultMap id="ExamRecordResultMap" type="com.model.ExamRecord">
+        <id property="id" column="id"/>
+        <result property="examid" column="examid"/>
+        <result property="studentid" column="studentid"/>
+        <result property="answers" column="answers"/>
+        <result property="score" column="score"/>
+        <result property="objectiveScore" column="objective_score"/>
+        <result property="status" column="status"/>
+        <result property="starttime" column="starttime"/>
+        <result property="submittime" column="submittime"/>
+        <result property="usedSeconds" column="used_seconds"/>
+        <result property="switchCount" column="switch_count"/>
+        <result property="autoSubmit" column="auto_submit"/>
+        <result property="aiComment" column="ai_comment"/>
+        <result property="studentname" column="studentname"/>
+        <result property="studentno" column="studentno"/>
+        <result property="examtitle" column="examtitle"/>
+        <result property="examTotalScore" column="exam_total_score"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.model.ExamRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO exam_record (examid, studentid, answers, score, objective_score, status,
+                                 starttime, submittime, used_seconds, switch_count, auto_submit, ai_comment)
+        VALUES (#{examid}, #{studentid}, #{answers}, #{score}, #{objectiveScore}, #{status},
+                #{starttime}, #{submittime}, #{usedSeconds}, #{switchCount}, #{autoSubmit}, #{aiComment})
+    </insert>
+
+    <update id="update" parameterType="com.model.ExamRecord">
+        UPDATE exam_record
+        SET answers = #{answers}, score = #{score}, objective_score = #{objectiveScore}, status = #{status},
+            submittime = #{submittime}, used_seconds = #{usedSeconds}, switch_count = #{switchCount},
+            auto_submit = #{autoSubmit}, ai_comment = #{aiComment}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByExamAndStudent" resultMap="ExamRecordResultMap">
+        SELECT er.*, e.title AS examtitle, e.total_score AS exam_total_score
+        FROM exam_record er
+        LEFT JOIN exam e ON er.examid = e.examid
+        WHERE er.examid = #{examid} AND er.studentid = #{studentid}
+    </select>
+
+    <select id="findById" resultMap="ExamRecordResultMap">
+        SELECT er.*, e.title AS examtitle, e.total_score AS exam_total_score,
+               s.studentname, s.studentno
+        FROM exam_record er
+        LEFT JOIN exam e ON er.examid = e.examid
+        LEFT JOIN student s ON er.studentid = s.studentid
+        WHERE er.id = #{id}
+    </select>
+
+    <select id="findByExam" resultMap="ExamRecordResultMap">
+        SELECT er.*, s.studentname, s.studentno
+        FROM exam_record er
+        LEFT JOIN student s ON er.studentid = s.studentid
+        WHERE er.examid = #{examid}
+        <if test="keyword != null and keyword != ''">
+            AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR s.studentno LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY er.score DESC, er.submittime ASC
+    </select>
+
+    <select id="statsByExam" resultType="java.util.Map">
+        SELECT COUNT(*) AS submitted,
+               IFNULL(ROUND(AVG(score), 1), 0) AS avgScore,
+               IFNULL(MAX(score), 0) AS maxScore,
+               IFNULL(MIN(score), 0) AS minScore,
+               IFNULL(SUM(CASE WHEN switch_count > 0 THEN 1 ELSE 0 END), 0) AS cheatSuspect
+        FROM exam_record
+        WHERE examid = #{examid} AND status >= 1
+    </select>
+
+</mapper>

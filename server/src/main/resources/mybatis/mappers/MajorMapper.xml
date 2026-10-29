@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.MajorMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="MajorResultMap" type="com.model.Major">
+        <id property="majorid" column="majorid"/>
+        <result property="majorname" column="majorname"/>
+    </resultMap>
+
+    <!-- 查询专业列表（分页） -->
+    <select id="findList" resultMap="MajorResultMap">
+        SELECT majorid, majorname
+        FROM major
+        ORDER BY majorid
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询所有专业 -->
+    <select id="findAll" resultMap="MajorResultMap">
+        SELECT majorid, majorname
+        FROM major
+        ORDER BY majorid
+    </select>
+
+    <!-- 查询专业总数 -->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM major
+    </select>
+
+    <!-- 根据ID查询专业 -->
+    <select id="findById" resultMap="MajorResultMap">
+        SELECT majorid, majorname
+        FROM major
+        WHERE majorid = #{majorid}
+    </select>
+
+    <!-- 添加专业 -->
+    <insert id="insert" parameterType="com.model.Major" useGeneratedKeys="true" keyProperty="majorid">
+        INSERT INTO major (majorname)
+        VALUES (#{majorname})
+    </insert>
+
+    <!-- 更新专业 -->
+    <update id="update" parameterType="com.model.Major">
+        UPDATE major
+        SET majorname = #{majorname}
+        WHERE majorid = #{majorid}
+    </update>
+
+    <!-- 删除专业 -->
+    <delete id="delete">
+        DELETE FROM major WHERE majorid = #{majorid}
+    </delete>
+
+</mapper>

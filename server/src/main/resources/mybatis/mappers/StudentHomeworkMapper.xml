@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.StudentHomeworkMapper">
+
+    <resultMap id="StudentHomeworkResultMap" type="com.model.StudentHomework">
+        <id property="id" column="id"/>
+        <result property="homeworkid" column="homeworkid"/>
+        <result property="studentid" column="studentid"/>
+        <result property="content" column="content"/>
+        <result property="filepath" column="filepath"/>
+        <result property="score" column="score"/>
+        <result property="comment" column="comment"/>
+        <result property="status" column="status"/>
+        <result property="submittime" column="submittime"/>
+        <result property="gradetime" column="gradetime"/>
+        <!-- 关联属性 -->
+        <result property="studentno" column="studentno"/>
+        <result property="studentname" column="studentname"/>
+        <result property="homeworktitle" column="homeworktitle"/>
+        <result property="homeworkcontent" column="homeworkcontent"/>
+        <result property="homeworktype" column="homeworktype"/>
+        <result property="deadline" column="deadline"/>
+        <result property="courseid" column="courseid"/>
+        <result property="coursename" column="coursename"/>
+        <result property="semester" column="semester"/>
+        <result property="teachername" column="teachername"/>
+        <result property="classid" column="classid"/>
+        <result property="classname" column="classname"/>
+        <result property="gradingStatus" column="grading_status"/>
+    </resultMap>
+
+    <!-- 查询学生作业列表（分页、搜索） -->
+    <select id="findList" resultMap="StudentHomeworkResultMap">
+        SELECT sh.id, sh.homeworkid, sh.studentid, sh.content, sh.filepath, sh.score, sh.comment, 
+               sh.status, sh.submittime, sh.gradetime, sh.grading_status,
+               s.studentno, s.studentname, s.classid, ci.classname,
+               h.title as homeworktitle, h.type as homeworktype, h.deadline,
+               c.courseid, c.coursename, c.semester, t.teachername
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR h.title LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY sh.id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询学生作业总数（带搜索条件） -->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR h.title LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据ID查询学生作业 -->
+    <select id="findById" resultMap="StudentHomeworkResultMap">
+        SELECT sh.id, sh.homeworkid, sh.studentid, sh.content, sh.filepath, sh.score, sh.comment, 
+               sh.status, sh.submittime, sh.gradetime, sh.grading_status,
+               s.studentno, s.studentname,
+               h.title as homeworktitle, h.content as homeworkcontent, h.type as homeworktype, h.deadline,
+               c.courseid, c.coursename, t.teachername
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        WHERE sh.id = #{id}
+    </select>
+
+    <!-- 根据作业ID查询学生提交列表 -->
+    <select id="findByHomeworkid" resultMap="StudentHomeworkResultMap">
+        SELECT sh.id, sh.homeworkid, sh.studentid, sh.content, sh.filepath, sh.score, sh.comment, 
+               sh.status, sh.submittime, sh.gradetime, sh.grading_status,
+               s.studentno, s.studentname, s.classid, ci.classname
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        WHERE sh.homeworkid = #{homeworkid}
+        <if test="keyword != null and keyword != ''">
+            AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR s.studentno LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY s.studentno ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据作业ID查询学生提交总数 -->
+    <select id="countByHomeworkid" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        WHERE sh.homeworkid = #{homeworkid}
+        <if test="keyword != null and keyword != ''">
+            AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR s.studentno LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <!-- 根据学生ID查询作业列表 -->
+    <select id="findByStudentid" resultMap="StudentHomeworkResultMap">
+        SELECT sh.id, sh.homeworkid, sh.studentid, sh.content, sh.filepath, sh.score, sh.comment, 
+               sh.status, sh.submittime, sh.gradetime, sh.grading_status,
+               h.title as homeworktitle, h.type as homeworktype, h.deadline,
+               c.courseid, c.coursename, c.semester, t.teachername
+        FROM studenthomework sh
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        LEFT JOIN teacher t ON h.teacherid = t.teacherid
+        WHERE sh.studentid = #{studentid}
+        <if test="courseid != null">
+            AND c.courseid = #{courseid}
+        </if>
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+        ORDER BY sh.submittime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据学生ID查询作业总数 -->
+    <select id="countByStudentid" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM studenthomework sh
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        WHERE sh.studentid = #{studentid}
+        <if test="courseid != null">
+            AND c.courseid = #{courseid}
+        </if>
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+    </select>
+
+    <!-- 根据作业ID和学生ID查询 -->
+    <select id="findByHomeworkAndStudent" resultMap="StudentHomeworkResultMap">
+        SELECT sh.id, sh.homeworkid, sh.studentid, sh.content, sh.filepath, sh.score, sh.comment, 
+               sh.status, sh.submittime, sh.gradetime, sh.grading_status,
+               h.title as homeworktitle, c.coursename
+        FROM studenthomework sh
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        WHERE sh.homeworkid = #{homeworkid} AND sh.studentid = #{studentid}
+        LIMIT 1
+    </select>
+
+    <!-- 插入学生作业 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO studenthomework (homeworkid, studentid, content, filepath, score, comment, status, submittime, gradetime, grading_status)
+        VALUES (#{homeworkid}, #{studentid}, #{content}, #{filepath}, #{score}, #{comment}, #{status}, #{submittime}, #{gradetime}, #{gradingStatus})
+    </insert>
+
+    <!-- 更新学生作业 -->
+    <update id="update">
+        UPDATE studenthomework
+        <set>
+            <if test="content != null">content = #{content},</if>
+            <if test="filepath != null">filepath = #{filepath},</if>
+            <if test="score != null">score = #{score},</if>
+            <if test="comment != null">comment = #{comment},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="submittime != null">submittime = #{submittime},</if>
+            <if test="gradetime != null">gradetime = #{gradetime},</if>
+            <if test="gradingStatus != null">grading_status = #{gradingStatus},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新学生作业（在线答题自动评分） -->
+    <update id="updateSubmit">
+        UPDATE studenthomework
+        SET content = #{content}, score = #{score}, status = #{status}, submittime = #{submittime}, grading_status = #{gradingStatus}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 更新学生作业（在线答题自动评分含评语） -->
+    <update id="updateSubmitWithGrade">
+        UPDATE studenthomework
+        SET content = #{content}, score = #{score}, comment = #{comment}, status = #{status}, submittime = #{submittime}, gradetime = #{gradetime}, grading_status = #{gradingStatus}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 批改作业 -->
+    <update id="grade">
+        UPDATE studenthomework
+        SET score = #{score}, comment = #{comment}, status = #{status}, gradetime = #{gradetime}, grading_status = #{gradingStatus}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除学生作业 -->
+    <delete id="delete">
+        DELETE FROM studenthomework WHERE id = #{id}
+    </delete>
+
+    <!-- 根据作业ID删除所有学生作业 -->
+    <delete id="deleteByHomeworkid">
+        DELETE FROM studenthomework WHERE homeworkid = #{homeworkid}
+    </delete>
+
+    <!-- 统计某作业的提交数量 -->
+    <select id="countSubmitted" resultType="int">
+        SELECT COUNT(*) FROM studenthomework WHERE homeworkid = #{homeworkid} AND status != 0
+    </select>
+
+    <!-- 根据教师ID查询学生作业列表 -->
+    <select id="findByTeacherid" resultMap="StudentHomeworkResultMap">
+        SELECT sh.id, sh.homeworkid, sh.studentid, sh.content, sh.filepath, sh.score, sh.comment, 
+               sh.status, sh.submittime, sh.gradetime, sh.grading_status,
+               s.studentno, s.studentname, s.classid, ci.classname,
+               h.title as homeworktitle, h.type as homeworktype, h.deadline,
+               c.courseid, c.coursename
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        WHERE h.teacherid = #{teacherid}
+        <if test="homeworkid != null">
+            AND sh.homeworkid = #{homeworkid}
+        </if>
+        <if test="courseid != null">
+            AND c.courseid = #{courseid}
+        </if>
+        <if test="classid != null">
+            AND s.classid = #{classid}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR h.title LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+        ORDER BY sh.submittime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 根据教师ID查询学生作业总数 -->
+    <select id="countByTeacherid" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        LEFT JOIN classinfo ci ON s.classid = ci.classid
+        LEFT JOIN homework h ON sh.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        WHERE h.teacherid = #{teacherid}
+        <if test="homeworkid != null">
+            AND sh.homeworkid = #{homeworkid}
+        </if>
+        <if test="courseid != null">
+            AND c.courseid = #{courseid}
+        </if>
+        <if test="classid != null">
+            AND s.classid = #{classid}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (s.studentname LIKE CONCAT('%', #{keyword}, '%') OR h.title LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+    </select>
+
+    <!-- 查询某作业未提交的学生列表 -->
+    <select id="findUnsubmittedStudents" resultType="com.model.Student">
+        SELECT s.studentid, s.studentno, s.studentname, s.classid, ci.classname
+        FROM student s
+        JOIN courseclass cc ON s.classid = cc.classid
+        JOIN homework h ON cc.courseid = h.courseid
+        JOIN classinfo ci ON s.classid = ci.classid
+        WHERE h.homeworkid = #{homeworkid}
+        AND s.studentid NOT IN (
+            SELECT studentid FROM studenthomework WHERE homeworkid = #{homeworkid}
+        )
+        ORDER BY s.classid, s.studentno
+    </select>
+
+    <!-- 更新AI评分状态 -->
+    <update id="updateGradingStatus">
+        UPDATE studenthomework
+        SET grading_status = #{gradingStatus}
+        <if test="comment != null">
+            , comment = #{comment}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+</mapper>

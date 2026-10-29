@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.PlagiarismMapper">
+
+    <resultMap id="ReportResultMap" type="com.model.PlagiarismReport">
+        <id property="id" column="id"/>
+        <result property="homeworkid" column="homeworkid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="pairCount" column="pair_count"/>
+        <result property="flaggedCount" column="flagged_count"/>
+        <result property="maxSimilarity" column="max_similarity"/>
+        <result property="threshold" column="threshold"/>
+        <result property="resultJson" column="result_json"/>
+        <result property="createTime" column="create_time"/>
+        <result property="homeworktitle" column="homeworktitle"/>
+        <result property="coursename" column="coursename"/>
+    </resultMap>
+
+    <select id="findSubmissionsForCheck" resultType="java.util.Map">
+        SELECT sh.studentid AS studentid,
+               s.studentno AS studentno,
+               s.studentname AS studentname,
+               sh.content AS content,
+               sh.filepath AS filepath
+        FROM studenthomework sh
+        LEFT JOIN student s ON sh.studentid = s.studentid
+        WHERE sh.homeworkid = #{homeworkid}
+          AND sh.status IN (1, 2)
+    </select>
+
+    <insert id="insertReport" parameterType="com.model.PlagiarismReport" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO plagiarism_report
+            (homeworkid, teacherid, pair_count, flagged_count, max_similarity, threshold, result_json, create_time)
+        VALUES
+            (#{homeworkid}, #{teacherid}, #{pairCount}, #{flaggedCount}, #{maxSimilarity}, #{threshold}, #{resultJson}, NOW())
+    </insert>
+
+    <select id="findByHomework" resultMap="ReportResultMap">
+        SELECT pr.*, h.title AS homeworktitle
+        FROM plagiarism_report pr
+        LEFT JOIN homework h ON pr.homeworkid = h.homeworkid
+        WHERE pr.homeworkid = #{homeworkid}
+        ORDER BY pr.id DESC
+    </select>
+
+    <select id="findByTeacher" resultMap="ReportResultMap">
+        SELECT pr.*, h.title AS homeworktitle, c.coursename
+        FROM plagiarism_report pr
+        LEFT JOIN homework h ON pr.homeworkid = h.homeworkid
+        LEFT JOIN course c ON h.courseid = c.courseid
+        WHERE pr.teacherid = #{teacherid}
+        ORDER BY pr.id DESC
+    </select>
+
+    <select id="findById" resultMap="ReportResultMap">
+        SELECT pr.*, h.title AS homeworktitle
+        FROM plagiarism_report pr
+        LEFT JOIN homework h ON pr.homeworkid = h.homeworkid
+        WHERE pr.id = #{id}
+    </select>
+
+</mapper>

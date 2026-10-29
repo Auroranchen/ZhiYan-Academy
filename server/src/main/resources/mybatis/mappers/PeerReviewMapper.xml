@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.PeerReviewMapper">
+
+    <select id="getTask" resultType="java.util.Map">
+        SELECT homeworkid, teacherid, reviewers_per AS reviewersPer, max_score AS maxScore,
+               anonymous, status, create_time AS createTime
+        FROM peer_review_task
+        WHERE homeworkid = #{homeworkid}
+    </select>
+
+    <insert id="upsertTask">
+        INSERT INTO peer_review_task (homeworkid, teacherid, reviewers_per, max_score, anonymous, status, create_time)
+        VALUES (#{homeworkid}, #{teacherid}, #{reviewersPer}, #{maxScore}, #{anonymous}, 1, NOW())
+        ON DUPLICATE KEY UPDATE
+            teacherid = #{teacherid},
+            reviewers_per = #{reviewersPer},
+            max_score = #{maxScore},
+            anonymous = #{anonymous},
+            status = 1
+    </insert>
+
+    <update id="updateTaskStatus">
+        UPDATE peer_review_task SET status = #{status} WHERE homeworkid = #{homeworkid}
+    </update>
+
+    <select id="listSubmissions" resultType="java.util.Map">
+        SELECT sh.id AS submitid, sh.studentid AS studentid, s.studentname AS studentname,
+               sh.content AS content, sh.filepath AS filepath, sh.status AS status
+        FROM studenthomework sh
+        LEFT JOIN student s ON s.studentid = sh.studentid
+        WHERE sh.homeworkid = #{homeworkid} AND sh.status IN (1, 2)
+        ORDER BY sh.id
+    </select>
+
+    <delete id="deleteAssignments">
+        DELETE FROM peer_review WHERE homeworkid = #{homeworkid}
+    </delete>
+
+    <insert id="insertAssignment">
+        INSERT IGNORE INTO peer_review (homeworkid, reviewerid, submitid, revieweeid, status, assign_time)
+        VALUES (#{homeworkid}, #{reviewerid}, #{submitid}, #{revieweeid}, 0, NOW())
+    </insert>
+
+    <select id="listByReviewer" resultType="java.util.Map">
+        SELECT pr.id AS id, pr.homeworkid AS homeworkid, pr.submitid AS submitid,
+               pr.status AS status, pr.score AS score, pr.comment AS comment,
+               pr.submit_time AS submitTime,
+               h.title AS homeworktitle, c.coursename AS coursename,
+               t.max_score AS maxScore, t.anonymous AS anonymous, t.status AS taskStatus
+        FROM peer_review pr
+        LEFT JOIN homework h ON h.homeworkid = pr.homeworkid
+        LEFT JOIN course c ON c.courseid = h.courseid
+        LEFT JOIN peer_review_task t ON t.homeworkid = pr.homeworkid
+        WHERE pr.reviewerid = #{reviewerid}
+        <if test="status != null">AND pr.status = #{status}</if>
+        ORDER BY pr.status ASC, pr.id DESC
+    </select>
+
+    <select id="getReview" resultType="java.util.Map">
+        SELECT pr.id AS id, pr.homeworkid AS homeworkid, pr.reviewerid AS reviewerid,
+               pr.submitid AS submitid, pr.revieweeid AS revieweeid,
+               pr.status AS status, pr.score AS score, pr.comment AS comment,
+               sh.content AS content, sh.filepath AS filepath,
+               s.studentname AS revieweename,
+               h.title AS homeworktitle, h.type AS homeworktype, h.content AS homeworkcontent,
+               c.coursename AS coursename,
+               t.max_score AS maxScore, t.anonymous AS anonymous, t.status AS taskStatus
+        FROM peer_review pr
+        LEFT JOIN studenthomework sh ON sh.id = pr.submitid
+        LEFT JOIN student s ON s.studentid = pr.revieweeid
+        LEFT JOIN homework h ON h.homeworkid = pr.homeworkid
+        LEFT JOIN course c ON c.courseid = h.courseid
+        LEFT JOIN peer_review_task t ON t.homeworkid = pr.homeworkid
+        WHERE pr.id = #{id}
+    </select>
+
+    <update id="submitReview">
+        UPDATE peer_review
+        SET score = #{score}, comment = #{comment}, status = 1, submit_time = NOW()
+        WHERE id = #{id} AND reviewerid = #{reviewerid} AND status = 0
+    </update>
+
+    <select id="listReceived" resultType="java.util.Map">
+        SELECT pr.id AS id, pr.homeworkid AS homeworkid, pr.score AS score, pr.comment AS comment,
+               pr.submit_time AS submitTime,
+               h.title AS homeworktitle, c.coursename AS coursename,
+               t.max_score AS maxScore, t.anonymous AS anonymous,
+               CASE WHEN t.anonymous = 1 THEN NULL ELSE rs.studentname END AS reviewername
+        FROM peer_review pr
+        LEFT JOIN homework h ON h.homeworkid = pr.homeworkid
+        LEFT JOIN course c ON c.courseid = h.courseid
+        LEFT JOIN peer_review_task t ON t.homeworkid = pr.homeworkid
+        LEFT JOIN student rs ON rs.studentid = pr.reviewerid
+        WHERE pr.revieweeid = #{revieweeid} AND pr.status = 1
+        ORDER BY pr.submit_time DESC
+    </select>
+
+    <select id="summaryByHomework" resultType="java.util.Map">
+        SELECT pr.revieweeid AS revieweeid, s.studentname AS studentname, s.studentno AS studentno,
+               COUNT(pr.id) AS totalCount,
+               SUM(CASE WHEN pr.status = 1 THEN 1 ELSE 0 END) AS reviewedCount,
+               ROUND(AVG(CASE WHEN pr.status = 1 THEN pr.score END), 1) AS avgScore
+        FROM peer_review pr
+        LEFT JOIN student s ON s.studentid = pr.revieweeid
+        WHERE pr.homeworkid = #{homeworkid}
+        GROUP BY pr.revieweeid, s.studentname, s.studentno
+        ORDER BY avgScore DESC
+    </select>
+
+    <select id="progress" resultType="java.util.Map">
+        SELECT COUNT(id) AS total,
+               SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS done
+        FROM peer_review
+        WHERE homeworkid = #{homeworkid}
+    </select>
+
+</mapper>

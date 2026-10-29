@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.ClassMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="ClassResultMap" type="com.model.ClassInfo">
+        <id property="classid" column="classid"/>
+        <result property="classname" column="classname"/>
+        <result property="majorid" column="majorid"/>
+        <result property="majorname" column="majorname"/>
+    </resultMap>
+
+    <!-- 查询班级列表（分页，关联专业） -->
+    <select id="findList" resultMap="ClassResultMap">
+        SELECT c.classid, c.classname, c.majorid, m.majorname
+        FROM classinfo c
+        LEFT JOIN major m ON c.majorid = m.majorid
+        ORDER BY c.classid
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 查询所有班级 -->
+    <select id="findAll" resultMap="ClassResultMap">
+        SELECT c.classid, c.classname, c.majorid, m.majorname
+        FROM classinfo c
+        LEFT JOIN major m ON c.majorid = m.majorid
+        ORDER BY c.classid
+    </select>
+
+    <!-- 根据专业ID查询班级列表 -->
+    <select id="findByMajorid" resultMap="ClassResultMap">
+        SELECT c.classid, c.classname, c.majorid, m.majorname
+        FROM classinfo c
+        LEFT JOIN major m ON c.majorid = m.majorid
+        WHERE c.majorid = #{majorid}
+        ORDER BY c.classid
+    </select>
+
+    <!-- 查询班级总数 -->
+    <select id="count" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM classinfo
+    </select>
+
+    <!-- 根据专业ID统计班级数量 -->
+    <select id="countByMajorid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM classinfo WHERE majorid = #{majorid}
+    </select>
+
+    <!-- 根据ID查询班级 -->
+    <select id="findById" resultMap="ClassResultMap">
+        SELECT c.classid, c.classname, c.majorid, m.majorname
+        FROM classinfo c
+        LEFT JOIN major m ON c.majorid = m.majorid
+        WHERE c.classid = #{classid}
+    </select>
+
+    <!-- 添加班级 -->
+    <insert id="insert" parameterType="com.model.ClassInfo" useGeneratedKeys="true" keyProperty="classid">
+        INSERT INTO classinfo (classname, majorid)
+        VALUES (#{classname}, #{majorid})
+    </insert>
+
+    <!-- 更新班级 -->
+    <update id="update" parameterType="com.model.ClassInfo">
+        UPDATE classinfo
+        SET classname = #{classname}, majorid = #{majorid}
+        WHERE classid = #{classid}
+    </update>
+
+    <!-- 删除班级 -->
+    <delete id="delete">
+        DELETE FROM classinfo WHERE classid = #{classid}
+    </delete>
+
+</mapper>

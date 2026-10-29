@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.AiExplainMapper">
+
+    <select id="findCache" resultType="com.model.AiExplainLog">
+        SELECT id, homework_id AS homeworkId, student_id AS studentId, question_id AS questionId,
+               key_points AS keyPoints, error_analysis AS errorAnalysis, steps, expansion,
+               reference_code AS referenceCode, common_mistakes AS commonMistakes,
+               version, create_time AS createTime, duration, is_cache_hit AS isCacheHit
+        FROM ai_explain_log 
+        WHERE homework_id = #{homeworkId} 
+        AND student_id = #{studentId} 
+        AND question_id = #{questionId}
+        AND version = #{version}
+        AND create_time > DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ORDER BY create_time DESC LIMIT 1
+    </select>
+
+    <select id="findCacheBasic" resultType="com.model.AiExplainLog">
+        SELECT id, homework_id AS homeworkId, student_id AS studentId, question_id AS questionId,
+               key_points AS keyPoints, error_analysis AS errorAnalysis, steps, expansion,
+               version, create_time AS createTime, duration, is_cache_hit AS isCacheHit
+        FROM ai_explain_log 
+        WHERE homework_id = #{homeworkId} 
+        AND student_id = #{studentId} 
+        AND question_id = #{questionId}
+        AND version = #{version}
+        AND create_time > DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ORDER BY create_time DESC LIMIT 1
+    </select>
+
+    <insert id="insertLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_explain_log 
+        (homework_id, student_id, question_id, key_points, error_analysis, steps, expansion, reference_code, common_mistakes, version, duration, is_cache_hit)
+        VALUES 
+        (#{homeworkId}, #{studentId}, #{questionId}, #{keyPoints}, #{errorAnalysis}, #{steps}, #{expansion}, #{referenceCode}, #{commonMistakes}, #{version}, #{duration}, #{isCacheHit})
+    </insert>
+
+    <insert id="insertLogBasic" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_explain_log 
+        (homework_id, student_id, question_id, key_points, error_analysis, steps, expansion, version, duration, is_cache_hit)
+        VALUES 
+        (#{homeworkId}, #{studentId}, #{questionId}, #{keyPoints}, #{errorAnalysis}, #{steps}, #{expansion}, #{version}, #{duration}, #{isCacheHit})
+    </insert>
+
+    <insert id="insertFavorite" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student_favorite 
+        (student_id, homework_id, question_id, question_content, explain_content)
+        VALUES 
+        (#{studentId}, #{homeworkId}, #{questionId}, #{questionContent}, #{explainContent})
+    </insert>
+
+    <select id="checkFavorite" resultType="int">
+        SELECT COUNT(*) FROM student_favorite 
+        WHERE student_id = #{studentId} AND question_id = #{questionId}
+    </select>
+
+    <select id="getFavorites" resultType="com.model.StudentFavorite">
+        SELECT id,
+               student_id AS studentId,
+               homework_id AS homeworkId,
+               question_id AS questionId,
+               question_content AS questionContent,
+               explain_content AS explainContent,
+               create_time AS createTime
+        FROM student_favorite
+        WHERE student_id = #{studentId}
+        ORDER BY create_time DESC
+    </select>
+
+    <delete id="deleteFavorite">
+        DELETE FROM student_favorite
+        WHERE id = #{id} AND student_id = #{studentId}
+    </delete>
+
+</mapper>

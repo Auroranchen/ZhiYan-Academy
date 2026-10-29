@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapper.CourseResourceMapper">
+
+    <resultMap id="CourseResourceResultMap" type="com.model.CourseResource">
+        <id property="id" column="id"/>
+        <result property="courseid" column="courseid"/>
+        <result property="teacherid" column="teacherid"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="filetype" column="filetype"/>
+        <result property="filepath" column="filepath"/>
+        <result property="filename" column="filename"/>
+        <result property="filesize" column="filesize"/>
+        <result property="downloadcount" column="downloadcount"/>
+        <result property="createtime" column="createtime"/>
+        <result property="coursename" column="coursename"/>
+        <result property="teachername" column="teachername"/>
+    </resultMap>
+
+    <select id="findByCourseid" resultMap="CourseResourceResultMap">
+        SELECT cr.*, c.coursename, t.teachername
+        FROM course_resource cr
+        LEFT JOIN course c ON cr.courseid = c.courseid
+        LEFT JOIN teacher t ON cr.teacherid = t.teacherid
+        WHERE cr.courseid = #{courseid}
+        ORDER BY cr.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByCourseid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM course_resource WHERE courseid = #{courseid}
+    </select>
+
+    <select id="findByTeacherid" resultMap="CourseResourceResultMap">
+        SELECT cr.*, c.coursename, t.teachername
+        FROM course_resource cr
+        LEFT JOIN course c ON cr.courseid = c.courseid
+        LEFT JOIN teacher t ON cr.teacherid = t.teacherid
+        WHERE c.teacherid = #{teacherid}
+        <if test="keyword != null and keyword != ''">
+            AND cr.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+        <if test="courseid != null">
+            AND cr.courseid = #{courseid}
+        </if>
+        ORDER BY cr.createtime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countByTeacherid" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM course_resource cr
+        LEFT JOIN course c ON cr.courseid = c.courseid
+        WHERE c.teacherid = #{teacherid}
+        <if test="keyword != null and keyword != ''">
+            AND cr.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="semester != null and semester != ''">
+            AND c.semester = #{semester}
+        </if>
+        <if test="courseid != null">
+            AND cr.courseid = #{courseid}
+        </if>
+    </select>
+
+    <select id="findById" resultMap="CourseResourceResultMap">
+        SELECT cr.*, c.coursename, t.teachername
+        FROM course_resource cr
+        LEFT JOIN course c ON cr.courseid = c.courseid
+        LEFT JOIN teacher t ON cr.teacherid = t.teacherid
+        WHERE cr.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.model.CourseResource" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course_resource (courseid, teacherid, title, description, filetype, filepath, filename, filesize, downloadcount, createtime)
+        VALUES (#{courseid}, #{teacherid}, #{title}, #{description}, #{filetype}, #{filepath}, #{filename}, #{filesize}, 0, #{createtime})
+    </insert>
+
+    <update id="update" parameterType="com.model.CourseResource">
+        UPDATE course_resource
+        SET title = #{title}, description = #{description}, filetype = #{filetype}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM course_resource WHERE id = #{id}
+    </delete>
+
+    <update id="incrementDownloadCount">
+        UPDATE course_resource SET downloadcount = downloadcount + 1 WHERE id = #{id}
+    </update>
+
+</mapper>
